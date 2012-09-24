@@ -34,8 +34,11 @@ import java.util.List;
  */
 public class PsiMethodWrapper extends PsiMemberWrapper {
 
-    public PsiMethodWrapper(@NotNull PsiMethod psiMethod) {
+    private final boolean kotlin;
+
+    public PsiMethodWrapper(@NotNull PsiMethod psiMethod, boolean kotlin) {
         super(psiMethod);
+        this.kotlin = kotlin;
     }
     
     private List<PsiParameterWrapper> parameters;
@@ -44,6 +47,7 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
         if (parameters == null) {
             PsiParameter[] psiParameters = getPsiMethod().getParameterList().getParameters();
             parameters = new ArrayList<PsiParameterWrapper>(psiParameters.length);
+            //noinspection ForLoopReplaceableByForEach
             for (int i = 0; i < psiParameters.length; ++i) {
                 parameters.add(new PsiParameterWrapper(psiParameters[i]));
             }
@@ -60,7 +64,7 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
     @NotNull
     public JetMethodAnnotation getJetMethod() {
         if (jetMethod == null) {
-            jetMethod = JetMethodAnnotation.get(getPsiMethod());
+            jetMethod = JetMethodAnnotation.get(getPsiMethod(), kotlin);
         }
         return jetMethod;
     }
@@ -69,7 +73,7 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
     @NotNull
     public JetConstructorAnnotation getJetConstructor() {
         if (jetConstructor == null) {
-            jetConstructor = JetConstructorAnnotation.get(getPsiMethod());
+            jetConstructor = JetConstructorAnnotation.get(getPsiMethod(), kotlin);
         }
         return jetConstructor;
     }
@@ -83,6 +87,7 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
         return signatureAnnotation;
     }
 
+    @Override
     public boolean isAbstract() {
         return psiMember.hasModifierProperty(PsiModifier.ABSTRACT);
     }

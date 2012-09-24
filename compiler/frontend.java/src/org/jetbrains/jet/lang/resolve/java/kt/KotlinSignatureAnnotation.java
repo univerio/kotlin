@@ -49,7 +49,7 @@ public class KotlinSignatureAnnotation extends PsiAnnotationWrapper {
     @NotNull
     public static KotlinSignatureAnnotation get(PsiMethod psiMethod) {
         final PsiAnnotation annotation =
-                JavaDescriptorResolver.findAnnotation(psiMethod, JvmStdlibNames.KOTLIN_SIGNATURE.getFqName().getFqName());
+                JavaDescriptorResolver.findAnnotation(psiMethod, JvmStdlibNames.KOTLIN_SIGNATURE.getFqName().getFqName(), true);
         return annotation != null ? new KotlinSignatureAnnotation(annotation) : NULL_ANNOTATION;
     }
 }

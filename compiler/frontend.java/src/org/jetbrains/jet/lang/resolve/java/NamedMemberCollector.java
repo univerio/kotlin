@@ -110,7 +110,7 @@ public class NamedMemberCollector {
 
 
         for (PsiMethod method0 : psiClass.getPsiClass().getMethods()) {
-            PsiMethodWrapper method = new PsiMethodWrapper(method0);
+            PsiMethodWrapper method = new PsiMethodWrapper(method0, kotlin);
 
             if (!includeMember(method)) {
                 continue;

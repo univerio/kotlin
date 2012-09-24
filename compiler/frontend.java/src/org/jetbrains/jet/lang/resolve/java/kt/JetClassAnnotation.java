@@ -48,7 +48,8 @@ public class JetClassAnnotation extends PsiAnnotationWithFlags {
 
     @NotNull
     public static JetClassAnnotation get(PsiClass psiClass) {
-        final PsiAnnotation annotation = JavaDescriptorResolver.findAnnotation(psiClass, JvmStdlibNames.JET_CLASS.getFqName().getFqName());
+        final PsiAnnotation annotation = JavaDescriptorResolver.findAnnotation(psiClass, JvmStdlibNames.JET_CLASS.getFqName().getFqName(),
+                                                                               true);
         return annotation != null ? new JetClassAnnotation(annotation) : NULL_ANNOTATION;
     }
 }

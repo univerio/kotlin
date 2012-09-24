@@ -81,7 +81,7 @@ public class PsiClassFinderImpl implements PsiClassFinder {
 
         if ("jet".equals(qualifiedName.parent().getFqName())) {
             PsiAnnotation assertInvisibleAnnotation = JavaDescriptorResolver
-                    .findAnnotation(original, JvmStdlibNames.ASSERT_INVISIBLE_IN_RESOLVER.getFqName().getFqName());
+                    .findAnnotation(original, JvmStdlibNames.ASSERT_INVISIBLE_IN_RESOLVER.getFqName().getFqName(), true);
             if (assertInvisibleAnnotation != null) {
                 if (runtimeClassesHandleMode == RuntimeClassesHandleMode.IGNORE) {
                     return null;

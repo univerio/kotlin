@@ -84,7 +84,7 @@ class KotlinSignatureUtil {
     static PsiAnnotation findKotlinSignatureAnnotation(@NotNull PsiElement element) {
         if (!(element instanceof PsiMethod)) return null;
         PsiMethod annotationOwner = getAnnotationOwner(element);
-        PsiAnnotation annotation = JavaDescriptorResolver.findAnnotation(annotationOwner, KOTLIN_SIGNATURE_ANNOTATION);
+        PsiAnnotation annotation = JavaDescriptorResolver.findAnnotation(annotationOwner, KOTLIN_SIGNATURE_ANNOTATION, true);
         if (annotation == null) return null;
         if (annotation.getParameterList().getAttributes().length == 0) return null;
         return annotation;

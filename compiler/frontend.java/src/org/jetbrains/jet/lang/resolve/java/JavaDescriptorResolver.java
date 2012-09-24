@@ -265,7 +265,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         // TODO: ugly hack: tests crash if initializeTypeParameters called with class containing proper supertypes
         supertypes.addAll(getSupertypes(new PsiClassWrapper(psiClass), classData, classData.getTypeParameters()));
 
-        MutableClassDescriptorLite classObject = createClassObjectDescriptor(classData.classDescriptor, psiClass);
+        MutableClassDescriptorLite classObject = createClassObjectDescriptor(classData.classDescriptor, psiClass, classData.kotlin);
         if (classObject != null) {
             classData.classDescriptor.getBuilder().setClassObjectDescriptor(classObject);
         }
@@ -355,7 +355,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         }
         else {
             for (PsiMethod psiConstructor : psiConstructors) {
-                ConstructorDescriptor constructor = resolveConstructor(psiClass, classData, isStatic, psiConstructor);
+                ConstructorDescriptor constructor = resolveConstructor(psiClass, classData, isStatic, psiConstructor, classData.kotlin);
                 if (constructor != null) {
                     constructors.add(constructor);
                 }
@@ -370,8 +370,8 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @Nullable
-    private ConstructorDescriptor resolveConstructor(PsiClass psiClass, ResolverClassData classData, boolean aStatic, PsiMethod psiConstructor) {
-        PsiMethodWrapper constructor = new PsiMethodWrapper(psiConstructor);
+    private ConstructorDescriptor resolveConstructor(PsiClass psiClass, ResolverClassData classData, boolean aStatic, PsiMethod psiConstructor, boolean kotlin) {
+        PsiMethodWrapper constructor = new PsiMethodWrapper(psiConstructor, kotlin);
 
         //noinspection deprecation
         if (constructor.getJetConstructor().hidden()) {
@@ -418,14 +418,18 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
      //* @see #createJavaNamespaceDescriptor(PsiClass)
      */
     @Nullable
-    private MutableClassDescriptorLite createClassObjectDescriptor(@NotNull ClassDescriptor containing, @NotNull PsiClass psiClass) {
+    private MutableClassDescriptorLite createClassObjectDescriptor(
+            @NotNull ClassDescriptor containing,
+            @NotNull PsiClass psiClass,
+            boolean kotlin
+    ) {
         checkPsiClassIsNotJet(psiClass);
 
         if (psiClass.isEnum()) {
             return createClassObjectDescriptorForEnum(containing, psiClass);
         }
 
-        if (!isKotlinClass(psiClass)) {
+        if (!kotlin) {
             return null;
         }
 
@@ -849,7 +853,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         else {
 
             JetType transformedType;
-            if (findAnnotation(parameter.getPsiParameter(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName()) != null) {
+            if (findAnnotation(parameter.getPsiParameter(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName(), true) != null) {
                 transformedType = TypeUtils.makeNullableAsSpecified(outType, false);
             }
             else {
@@ -1150,7 +1154,8 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             }
             else {
                 propertyType = semanticServices.getTypeTransformer().transformToType(anyMember.getType().getPsiType(), typeVariableResolverForPropertyInternals);
-                if (findAnnotation(anyMember.getType().getPsiNotNullOwner(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName()) != null) {
+                if (findAnnotation(anyMember.getType().getPsiNotNullOwner(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName(),
+                                   true) != null) {
                     propertyType = TypeUtils.makeNullableAsSpecified(propertyType, false);
                 }
                 else if (members.getter == null && members.setter == null && members.field.getMember().isFinal() && members.field.getMember().isStatic()) {
@@ -1714,7 +1719,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
                     returnType, JavaTypeTransformer.TypeUsage.MEMBER_SIGNATURE_COVARIANT, typeVariableResolver);
         }
 
-        if (findAnnotation(method.getPsiMethod(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName()) != null) {
+        if (findAnnotation(method.getPsiMethod(), JvmAbi.JETBRAINS_NOT_NULL_ANNOTATION.getFqName().getFqName(), true) != null) {
             return TypeUtils.makeNullableAsSpecified(transformedType, false);
         }
         else {
@@ -1821,15 +1826,21 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @Nullable
-    public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner owner, @NotNull String fqName) {
-        PsiModifierList list = owner.getModifierList();
-        if (list != null) {
-            PsiAnnotation found = list.findAnnotation(fqName);
-            if (found != null) {
-                return found;
+    public static PsiAnnotation findAnnotation(@NotNull PsiModifierListOwner owner, @NotNull String fqName, boolean notOnlyExternal) {
+        if (notOnlyExternal) {
+            PsiModifierList list = owner.getModifierList();
+            if (list != null) {
+                PsiAnnotation found = list.findAnnotation(fqName);
+                if (found != null) {
+                    return found;
+                }
             }
         }
 
+        return findOnlyExternalAnnotation(owner, fqName);
+    }
+
+    private static PsiAnnotation findOnlyExternalAnnotation(PsiModifierListOwner owner, String fqName) {
         return ExternalAnnotationsManager.getInstance(owner.getProject()).findExternalAnnotation(owner, fqName);
     }
 }

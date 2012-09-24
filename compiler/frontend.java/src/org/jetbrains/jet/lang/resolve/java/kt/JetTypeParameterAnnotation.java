@@ -41,7 +41,7 @@ public class JetTypeParameterAnnotation extends PsiAnnotationWrapper {
     @NotNull
     public static JetTypeParameterAnnotation get(@NotNull PsiParameter psiParameter) {
         final PsiAnnotation annotation =
-                JavaDescriptorResolver.findAnnotation(psiParameter, JvmStdlibNames.JET_TYPE_PARAMETER.getFqName().getFqName());
+                JavaDescriptorResolver.findAnnotation(psiParameter, JvmStdlibNames.JET_TYPE_PARAMETER.getFqName().getFqName(), true);
         return annotation != null ? new JetTypeParameterAnnotation(annotation) : NULL_ANNOTATION;
     }
 }

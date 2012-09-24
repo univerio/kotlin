@@ -47,9 +47,9 @@ public class JetConstructorAnnotation extends PsiAnnotationWithFlags {
         return hidden;
     }
 
-    public static JetConstructorAnnotation get(PsiMethod constructor) {
+    public static JetConstructorAnnotation get(PsiMethod constructor, boolean kotlin) {
         final PsiAnnotation annotation =
-                JavaDescriptorResolver.findAnnotation(constructor, JvmStdlibNames.JET_CONSTRUCTOR.getFqName().getFqName());
+                JavaDescriptorResolver.findAnnotation(constructor, JvmStdlibNames.JET_CONSTRUCTOR.getFqName().getFqName(), kotlin);
         return annotation != null ? new JetConstructorAnnotation(annotation) : NULL_ANNOTATION;
     }
 }
