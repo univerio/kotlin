@@ -41,7 +41,7 @@ import java.util.Map;
 */
 abstract class ResolverScopeData {
     @Nullable
-    final PsiClass psiClass;
+    final PsiClassWrapper psiClass;
     @Nullable
     final PsiPackage psiPackage;
     @Nullable
@@ -57,7 +57,18 @@ abstract class ResolverScopeData {
             boolean staticMembers,
             @NotNull ClassOrNamespaceDescriptor descriptor
     ) {
-        JavaDescriptorResolver.checkPsiClassIsNotJet(psiClass);
+        this(psiClass == null ? null : new PsiClassWrapper(psiClass), psiPackage, fqName, staticMembers, descriptor);
+    }
+
+    ResolverScopeData(
+            @Nullable PsiClassWrapper psiClass,
+            @Nullable PsiPackage psiPackage,
+            @Nullable FqName fqName,
+            boolean staticMembers,
+            @NotNull ClassOrNamespaceDescriptor descriptor
+    ) {
+        if (psiClass != null)
+            JavaDescriptorResolver.checkPsiClassIsNotJet(psiClass.getPsiClass());
 
         this.psiClass = psiClass;
         this.psiPackage = psiPackage;
@@ -68,7 +79,7 @@ abstract class ResolverScopeData {
         }
 
         this.staticMembers = staticMembers;
-        this.kotlin = psiClass != null && JavaDescriptorResolver.isKotlinClass(psiClass);
+        this.kotlin = psiClass != null && this.psiClass.isKotlinClass();
         classOrNamespaceDescriptor = descriptor;
 
         if (fqName != null && fqName.lastSegmentIs(Name.identifier(JvmAbi.PACKAGE_CLASS)) && psiClass != null && kotlin) {
@@ -95,7 +106,7 @@ abstract class ResolverScopeData {
         }
         else {
             assert psiClass != null;
-            return psiClass;
+            return psiClass.getPsiClass();
         }
     }
 
@@ -110,7 +121,7 @@ abstract class ResolverScopeData {
             if (psiClass != null) {
                 @SuppressWarnings("ConstantConditions")
                 NamedMemberCollector
-                        builder = new NamedMemberCollector(new PsiClassWrapper(psiClass), staticMembers, kotlin);
+                        builder = new NamedMemberCollector(psiClass, staticMembers, kotlin);
                 builder.run();
                 namedMembersMap =
                         builder.namedMembersMap.isEmpty() ? Collections.<Name, NamedMembers>emptyMap() : builder.namedMembersMap;
@@ -126,7 +137,7 @@ abstract class ResolverScopeData {
 /** Class with instance members */
 class ResolverBinaryClassData extends ResolverClassData {
 
-    ResolverBinaryClassData(@NotNull PsiClass psiClass, @Nullable FqName fqName, @NotNull ClassDescriptorFromJvmBytecode classDescriptor) {
+    ResolverBinaryClassData(@NotNull PsiClassWrapper psiClass, @Nullable FqName fqName, @NotNull ClassDescriptorFromJvmBytecode classDescriptor) {
         super(psiClass, null, fqName, false, classDescriptor);
     }
 
@@ -161,6 +172,16 @@ class ResolverClassData extends ResolverScopeData {
         classDescriptor = descriptor;
     }
 
+    protected ResolverClassData(
+            @Nullable PsiClassWrapper psiClass,
+            @Nullable PsiPackage psiPackage,
+            @Nullable FqName fqName,
+            boolean staticMembers,
+            @NotNull ClassDescriptorFromJvmBytecode descriptor
+    ) {
+        super(psiClass, psiPackage, fqName, staticMembers, descriptor);
+        classDescriptor = descriptor;
+    }
     @NotNull
     public ClassDescriptor getClassDescriptor() {
         return classDescriptor;
@@ -178,7 +199,7 @@ class ResolverClassData extends ResolverScopeData {
 class ResolverSyntheticClassObjectClassData extends ResolverClassData {
 
     protected ResolverSyntheticClassObjectClassData(
-            @Nullable PsiClass psiClass,
+            @Nullable PsiClassWrapper psiClass,
             @Nullable FqName fqName,
             @NotNull ClassDescriptorFromJvmBytecode descriptor
     ) {

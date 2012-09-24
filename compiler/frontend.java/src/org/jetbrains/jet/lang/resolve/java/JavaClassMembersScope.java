@@ -78,7 +78,7 @@ public class JavaClassMembersScope extends JavaClassOrPackageScope {
 
     private ClassifierDescriptor doGetClassifierDescriptor(Name name) {
         // TODO : suboptimal, walk the list only once
-        for (PsiClass innerClass : resolverScopeData.psiClass.getAllInnerClasses()) {
+        for (PsiClass innerClass : resolverScopeData.psiClass.getPsiClass().getAllInnerClasses()) {
             if (name.getName().equals(innerClass.getName())) {
                 if (innerClass.hasModifierProperty(PsiModifier.STATIC) != resolverScopeData.staticMembers) return null;
                 ClassDescriptor classDescriptor = semanticServices.getDescriptorResolver()

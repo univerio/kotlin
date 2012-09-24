@@ -16,13 +16,13 @@
 
 package org.jetbrains.jet.lang.resolve.java;
 
-import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.ClassKind;
 import org.jetbrains.jet.lang.descriptors.ConstructorDescriptor;
 import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.MutableClassDescriptorLite;
+import org.jetbrains.jet.lang.resolve.java.psi.PsiClassWrapper;
 import org.jetbrains.jet.lang.resolve.lazy.LazyClassDescriptor;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 
@@ -45,7 +45,7 @@ public class ClassDescriptorFromJvmBytecode extends MutableClassDescriptorLite {
 
     public ClassDescriptorFromJvmBytecode(
             @NotNull DeclarationDescriptor containingDeclaration, @NotNull ClassKind kind,
-            @NotNull PsiClass psiClass, @Nullable FqName fqName,
+            @NotNull PsiClassWrapper psiClass, @Nullable FqName fqName,
             @NotNull JavaDescriptorResolver javaDescriptorResolver) {
         super(containingDeclaration, kind);
         this.javaDescriptorResolver = javaDescriptorResolver;

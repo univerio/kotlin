@@ -84,11 +84,11 @@ public abstract class JavaClassOrPackageScope extends JetScopeImpl {
                 // TODO: Trying to hack the situation when we produce namespace descriptor for java class and still want to see inner classes
                 if (getContainingDeclaration() instanceof JavaNamespaceDescriptor) {
                     allDescriptors.addAll(semanticServices.getDescriptorResolver().resolveInnerClasses(
-                            resolverScopeData.classOrNamespaceDescriptor, resolverScopeData.psiClass, false));
+                            resolverScopeData.classOrNamespaceDescriptor, resolverScopeData.psiClass.getPsiClass(), false));
                 }
                 else {
                     allDescriptors.addAll(semanticServices.getDescriptorResolver().resolveInnerClasses(
-                            resolverScopeData.classOrNamespaceDescriptor, resolverScopeData.psiClass,
+                            resolverScopeData.classOrNamespaceDescriptor, resolverScopeData.psiClass.getPsiClass(),
                             resolverScopeData.staticMembers));
                 }
             }

@@ -34,7 +34,6 @@ import org.jetbrains.jet.lang.resolve.*;
 import org.jetbrains.jet.lang.resolve.constants.*;
 import org.jetbrains.jet.lang.resolve.constants.StringValue;
 import org.jetbrains.jet.lang.resolve.java.kt.DescriptorKindUtils;
-import org.jetbrains.jet.lang.resolve.java.kt.JetClassAnnotation;
 import org.jetbrains.jet.lang.resolve.java.kt.JetMethodAnnotation;
 import org.jetbrains.jet.lang.resolve.java.kt.PsiAnnotationWithFlags;
 import org.jetbrains.jet.lang.resolve.java.psi.*;
@@ -222,6 +221,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
         Name name = Name.identifier(psiClass.getName());
         ClassKind kind = psiClass.isInterface() ? (psiClass.isAnnotationType() ? ClassKind.ANNOTATION_CLASS : ClassKind.TRAIT) : (psiClass.isEnum() ? ClassKind.ENUM_CLASS : ClassKind.CLASS);
+
         ClassOrNamespaceDescriptor containingDeclaration = resolveParentDescriptor(psiClass);
 
         // class may be resolved during resolution of parent
@@ -230,15 +230,17 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             return classData;
         }
 
+        PsiClassWrapper psiClassWrapper = new PsiClassWrapper(psiClass);
+
         classData = new ClassDescriptorFromJvmBytecode(
-                containingDeclaration, kind, psiClass, fqName, this)
+                containingDeclaration, kind, psiClassWrapper, fqName, this)
                         .getResolverBinaryClassData();
         classDescriptorCache.put(fqName, classData);
         classData.classDescriptor.setName(name);
 
         List<JetType> supertypes = new ArrayList<JetType>();
 
-        classData.typeParameters = javaDescriptorSignatureResolver.createUninitializedClassTypeParameters(psiClass, classData);
+        classData.typeParameters = javaDescriptorSignatureResolver.createUninitializedClassTypeParameters(psiClassWrapper, classData);
         
         List<TypeParameterDescriptor> typeParameters = new ArrayList<TypeParameterDescriptor>();
         for (JavaDescriptorSignatureResolver.TypeParameterDescriptorInitialization typeParameter : classData.typeParameters) {
@@ -247,7 +249,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         
         classData.classDescriptor.setTypeParameterDescriptors(typeParameters);
         classData.classDescriptor.setSupertypes(supertypes);
-        classData.classDescriptor.setVisibility(resolveVisibility(psiClass, JetClassAnnotation.get(psiClass)));
+        classData.classDescriptor.setVisibility(resolveVisibility(psiClassWrapper.getPsiClass(), psiClassWrapper.getJetClassAnnotation()));
         Modality modality;
         if (classData.classDescriptor.getKind() == ClassKind.ANNOTATION_CLASS) {
             modality = Modality.FINAL;
@@ -264,16 +266,16 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         javaDescriptorSignatureResolver.initializeTypeParameters(classData.typeParameters, classData.classDescriptor, "class " + qualifiedName);
 
         // TODO: ugly hack: tests crash if initializeTypeParameters called with class containing proper supertypes
-        supertypes.addAll(getSupertypes(new PsiClassWrapper(psiClass), classData, classData.getTypeParameters()));
+        supertypes.addAll(getSupertypes(psiClassWrapper, classData, classData.getTypeParameters()));
 
-        MutableClassDescriptorLite classObject = createClassObjectDescriptor(classData.classDescriptor, psiClass, classData.kotlin);
+        MutableClassDescriptorLite classObject = createClassObjectDescriptor(classData.classDescriptor, psiClassWrapper, classData.kotlin);
         if (classObject != null) {
             classData.classDescriptor.getBuilder().setClassObjectDescriptor(classObject);
         }
 
-        classData.classDescriptor.setAnnotations(resolveAnnotations(psiClass, taskList));
+        classData.classDescriptor.setAnnotations(resolveAnnotations(psiClassWrapper.getPsiClass(), taskList));
 
-        trace.record(BindingContext.CLASS, psiClass, classData.classDescriptor);
+        trace.record(BindingContext.CLASS, psiClassWrapper.getPsiClass(), classData.classDescriptor);
 
         return classData;
     }
@@ -282,10 +284,12 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     public Collection<ConstructorDescriptor> resolveConstructors(@NotNull ResolverClassData classData) {
         Collection<ConstructorDescriptor> constructors = Lists.newArrayList();
 
-        PsiClass psiClass = classData.psiClass;
+        final PsiClassWrapper psiClassWrapper = classData.psiClass;
+        assert psiClassWrapper != null;
+
+        PsiClass psiClass = psiClassWrapper.getPsiClass();
 
         ClassDescriptorFromJvmBytecode containingClass = classData.classDescriptor;
-        assert psiClass != null;
         TypeVariableResolver resolverForTypeParameters = TypeVariableResolvers.classTypeVariableResolver(
                 containingClass, "class " + psiClass.getQualifiedName());
 
@@ -405,10 +409,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @Nullable
-    private static PsiClass getInnerClassClassObject(@NotNull PsiClass outer) {
-        for (PsiClass inner : outer.getInnerClasses()) {
+    private static PsiClassWrapper getInnerClassClassObject(@NotNull PsiClassWrapper outer) {
+        for (PsiClass inner : outer.getPsiClass().getInnerClasses()) {
             if (inner.getName().equals(JvmAbi.CLASS_OBJECT_CLASS_NAME)) {
-                return inner;
+                return new PsiClassWrapper(inner);
             }
         }
         return null;
@@ -421,13 +425,14 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     @Nullable
     private MutableClassDescriptorLite createClassObjectDescriptor(
             @NotNull ClassDescriptor containing,
-            @NotNull PsiClass psiClass,
+            @NotNull PsiClassWrapper psiClassWrapper,
             boolean kotlin
     ) {
+        final PsiClass psiClass = psiClassWrapper.getPsiClass();
         checkPsiClassIsNotJet(psiClass);
 
         if (psiClass.isEnum()) {
-            return createClassObjectDescriptorForEnum(containing, psiClass);
+            return createClassObjectDescriptorForEnum(containing, psiClassWrapper);
         }
 
         if (!kotlin) {
@@ -437,16 +442,16 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         // If there's at least one inner enum, we need to create a class object (to put this enum into)
         for (PsiClass innerClass : psiClass.getInnerClasses()) {
             if (isInnerEnum(innerClass, containing)) {
-                return createSyntheticClassObject(containing, psiClass);
+                return createSyntheticClassObject(containing, psiClassWrapper);
             }
         }
 
-        PsiClass classObjectPsiClass = getInnerClassClassObject(psiClass);
+        PsiClassWrapper classObjectPsiClass = getInnerClassClassObject(psiClassWrapper);
         if (classObjectPsiClass == null) {
             return null;
         }
 
-        final String qualifiedName = classObjectPsiClass.getQualifiedName();
+        final String qualifiedName = classObjectPsiClass.getPsiClass().getQualifiedName();
         assert qualifiedName != null;
         FqName fqName = new FqName(qualifiedName);
         ResolverClassData classData = new ClassDescriptorFromJvmBytecode(
@@ -455,13 +460,9 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
         ClassDescriptorFromJvmBytecode classObjectDescriptor = classData.classDescriptor;
         classObjectDescriptor.setSupertypes(
-                getSupertypes(new PsiClassWrapper(classObjectPsiClass), classData, new ArrayList<TypeParameterDescriptor>(0)));
+                getSupertypes(classObjectPsiClass, classData, new ArrayList<TypeParameterDescriptor>(0)));
         setUpClassObjectDescriptor(containing, fqName, classData, getClassObjectName(containing.getName()));
         return classObjectDescriptor;
-    }
-
-    static boolean isKotlinClass(@NotNull PsiClass psiClass) {
-        return new PsiClassWrapper(psiClass).getJetClassAnnotation().isDefined() || psiClass.getName().equals(JvmAbi.PACKAGE_CLASS);
     }
 
     private static boolean isInnerEnum(@NotNull PsiClass innerClass, DeclarationDescriptor owner) {
@@ -473,7 +474,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @NotNull
-    private MutableClassDescriptorLite createClassObjectDescriptorForEnum(@NotNull ClassDescriptor containing, @NotNull PsiClass psiClass) {
+    private MutableClassDescriptorLite createClassObjectDescriptorForEnum(@NotNull ClassDescriptor containing, @NotNull PsiClassWrapper psiClass) {
         MutableClassDescriptorLite classObjectDescriptor = createSyntheticClassObject(containing, psiClass);
 
         classObjectDescriptor.getBuilder().addFunctionDescriptor(createEnumClassObjectValuesMethod(classObjectDescriptor, trace));
@@ -483,10 +484,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @NotNull
-    private MutableClassDescriptorLite createSyntheticClassObject(@NotNull ClassDescriptor containing, @NotNull PsiClass psiClass) {
-        String psiClassQualifiedName = psiClass.getQualifiedName();
+    private MutableClassDescriptorLite createSyntheticClassObject(@NotNull ClassDescriptor containing, @NotNull PsiClassWrapper psiClass) {
+        String psiClassQualifiedName = psiClass.getPsiClass().getQualifiedName();
         assert psiClassQualifiedName != null : "Reading java class with no qualified name";
-        FqNameUnsafe fqName = new FqNameUnsafe(psiClassQualifiedName + "." + getClassObjectName(psiClass.getName()).getName());
+        FqNameUnsafe fqName = new FqNameUnsafe(psiClassQualifiedName + "." + getClassObjectName(psiClass.getPsiClass().getName()).getName());
         ClassDescriptorFromJvmBytecode classObjectDescriptor = new ClassDescriptorFromJvmBytecode(
                 containing, ClassKind.CLASS_OBJECT, psiClass, null, this);
 
@@ -537,12 +538,16 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             if (clazz == null) {
                 throw new IllegalStateException("PsiClass not found by name " + containerFqName + ", required to be container declaration of " + fqName);
             }
-            if (isInnerEnum(psiClass, clazz) && isKotlinClass(psiClass)) {
-                ClassDescriptor classObjectDescriptor = clazz.getClassObjectDescriptor();
-                if (classObjectDescriptor == null) {
-                    throw new IllegalStateException("Class object for a class with inner enum should've been created earlier: " + clazz);
+            if (isInnerEnum(psiClass, clazz)) {
+                final ResolverClassData data = classDescriptorCache.get(containerFqName);
+                //noinspection ConstantConditions
+                if (data != null && data.psiClass != null && data.psiClass.isKotlinClass()) {
+                    ClassDescriptor classObjectDescriptor = clazz.getClassObjectDescriptor();
+                    if (classObjectDescriptor == null) {
+                        throw new IllegalStateException("Class object for a class with inner enum should've been created earlier: " + clazz);
+                    }
+                    return classObjectDescriptor;
                 }
-                return classObjectDescriptor;
             }
             return clazz;
         }
@@ -559,7 +564,8 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
         final List<JetType> result = new ArrayList<JetType>();
 
-        String context = "class " + psiClass.getQualifiedName();
+        final String name = psiClass.getPsiClass().getQualifiedName();
+        String context = "class " + name;
 
         if (psiClass.getJetClassAnnotation().signature().length() > 0) {
             final TypeVariableResolver typeVariableResolver = TypeVariableResolvers.typeVariableResolverFromTypeParameters(typeParameters, classDescriptor, context);
@@ -602,8 +608,9 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         }
         
         if (result.isEmpty()) {
+            assert name != null;
             if (classData.kotlin
-                    || OBJECT_FQ_NAME.equalsTo(psiClass.getQualifiedName())
+                    || OBJECT_FQ_NAME.equalsTo(name)
                     // TODO: annotations
                     || classDescriptor.getKind() == ClassKind.ANNOTATION_CLASS) {
                 result.add(JetStandardClasses.getAnyType());
@@ -875,10 +882,11 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
     public Set<VariableDescriptor> resolveFieldGroupByName(@NotNull Name fieldName, @NotNull ResolverScopeData scopeData) {
 
-        final PsiClass psiClass = scopeData.psiClass;
-        if (psiClass == null) {
+        final PsiClassWrapper psiClassWrapper = scopeData.psiClass;
+        if (psiClassWrapper == null) {
             return Collections.emptySet();
         }
+        final PsiClass psiClass = psiClassWrapper.getPsiClass();
 
         final Map<Name, NamedMembers> members = scopeData.getNamedMembers();
 
@@ -897,8 +905,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     @NotNull
     public Set<VariableDescriptor> resolveFieldGroup(@NotNull ResolverScopeData scopeData) {
 
-        final PsiClass psiClass = scopeData.psiClass;
-        assert psiClass != null;
+        final PsiClassWrapper psiClassWrapper = scopeData.psiClass;
+        assert psiClassWrapper != null;
+
+        final PsiClass psiClass = psiClassWrapper.getPsiClass();
 
         Set<VariableDescriptor> descriptors = Sets.newHashSet();
         Map<Name, NamedMembers> membersForProperties = scopeData.getNamedMembers();
@@ -1229,8 +1239,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             @NotNull ResolverScopeData scopeData,
             boolean isStatic
     ) {
-        final PsiClass psiClass = scopeData.psiClass;
-        assert psiClass != null;
+        final PsiClassWrapper psiClassWrapper = scopeData.psiClass;
+        assert psiClassWrapper != null;
+
+        final PsiClass psiClass = psiClassWrapper.getPsiClass();
 
         boolean isEnum = psiClass.isEnum();
         if (isEnum && isStatic) {
@@ -1334,7 +1346,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         NamedMembers namedMembers = namedMembersMap.get(methodName);
         if (namedMembers != null && namedMembers.methods != null) {
 
-            resolveNamedGroupFunctions(scopeData.classOrNamespaceDescriptor, scopeData.psiClass, namedMembers, methodName, scopeData);
+            final PsiClassWrapper psiClassWrapper = scopeData.psiClass;
+            assert psiClassWrapper != null;
+
+            resolveNamedGroupFunctions(scopeData.classOrNamespaceDescriptor, psiClassWrapper.getPsiClass(), namedMembers, methodName, scopeData);
 
             return namedMembers.functionDescriptors;
         }
@@ -1681,12 +1696,15 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
     public List<FunctionDescriptor> resolveMethods(@NotNull ResolverScopeData scopeData) {
 
+        final PsiClassWrapper psiClassWrapper = scopeData.psiClass;
+        assert psiClassWrapper != null;
+
         List<FunctionDescriptor> functions = new ArrayList<FunctionDescriptor>();
 
         for (Map.Entry<Name, NamedMembers> entry : scopeData.getNamedMembers().entrySet()) {
             Name methodName = entry.getKey();
             NamedMembers namedMembers = entry.getValue();
-            resolveNamedGroupFunctions(scopeData.classOrNamespaceDescriptor, scopeData.psiClass,
+            resolveNamedGroupFunctions(scopeData.classOrNamespaceDescriptor, psiClassWrapper.getPsiClass(),
                                        namedMembers, methodName, scopeData);
             functions.addAll(namedMembers.functionDescriptors);
         }

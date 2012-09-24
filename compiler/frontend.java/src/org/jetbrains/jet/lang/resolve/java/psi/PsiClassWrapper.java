@@ -18,6 +18,7 @@ package org.jetbrains.jet.lang.resolve.java.psi;
 
 import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.jet.lang.resolve.java.JvmAbi;
 import org.jetbrains.jet.lang.resolve.java.kt.JetClassAnnotation;
 
 /**
@@ -35,10 +36,6 @@ public class PsiClassWrapper {
         this.psiClass = psiClass;
     }
 
-    public final String getQualifiedName() {
-        return psiClass.getQualifiedName();
-    }
-
     @NotNull
     public final PsiClass getPsiClass() {
         return psiClass;
@@ -50,5 +47,9 @@ public class PsiClassWrapper {
             jetClassAnnotation = JetClassAnnotation.get(psiClass);
         }
         return jetClassAnnotation;
+    }
+
+    public boolean isKotlinClass() {
+        return getJetClassAnnotation().isDefined() || getPsiClass().getName().equals(JvmAbi.PACKAGE_CLASS);
     }
 }

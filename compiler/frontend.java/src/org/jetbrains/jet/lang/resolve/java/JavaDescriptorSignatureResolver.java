@@ -27,6 +27,7 @@ import org.jetbrains.jet.lang.descriptors.TypeParameterDescriptor;
 import org.jetbrains.jet.lang.descriptors.TypeParameterDescriptorImpl;
 import org.jetbrains.jet.lang.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.jet.lang.resolve.java.kt.JetClassAnnotation;
+import org.jetbrains.jet.lang.resolve.java.psi.PsiClassWrapper;
 import org.jetbrains.jet.lang.resolve.java.psi.PsiMethodWrapper;
 import org.jetbrains.jet.lang.resolve.name.Name;
 import org.jetbrains.jet.lang.types.JetType;
@@ -310,15 +311,15 @@ public class JavaDescriptorSignatureResolver {
     }
 
 
-    List<TypeParameterDescriptorInitialization> createUninitializedClassTypeParameters(PsiClass psiClass, ResolverClassData classData) {
-        JetClassAnnotation jetClassAnnotation = JetClassAnnotation.get(psiClass);
+    List<TypeParameterDescriptorInitialization> createUninitializedClassTypeParameters(PsiClassWrapper psiClass, ResolverClassData classData) {
+        JetClassAnnotation jetClassAnnotation = psiClass.getJetClassAnnotation();
 
         if (jetClassAnnotation.signature().length() > 0) {
             return resolveClassTypeParametersFromJetSignature(
-                    jetClassAnnotation.signature(), psiClass, classData.classDescriptor);
+                    jetClassAnnotation.signature(), psiClass.getPsiClass(), classData.classDescriptor);
         }
 
-        return makeUninitializedTypeParameters(classData.classDescriptor, psiClass.getTypeParameters());
+        return makeUninitializedTypeParameters(classData.classDescriptor, psiClass.getPsiClass().getTypeParameters());
     }
 
 
