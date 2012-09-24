@@ -98,7 +98,7 @@ abstract class ResolverScopeData {
         }
     }
 
-    Map<Name, NamedMembers> namedMembersMap;
+    private Map<Name, NamedMembers> namedMembersMap;
 
     @NotNull
     public abstract List<TypeParameterDescriptor> getTypeParameters();
@@ -111,7 +111,8 @@ abstract class ResolverScopeData {
                 NamedMemberCollector
                         builder = new NamedMemberCollector(new PsiClassWrapper(psiClass), staticMembers, kotlin);
                 builder.run();
-                namedMembersMap = builder.namedMembersMap;
+                namedMembersMap =
+                        builder.namedMembersMap.isEmpty() ? Collections.<Name, NamedMembers>emptyMap() : builder.namedMembersMap;
             }
             else {
                 namedMembersMap = Collections.emptyMap();

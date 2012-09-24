@@ -875,9 +875,9 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             return Collections.emptySet();
         }
 
-        scopeData.getNamedMembers();
+        final Map<Name, NamedMembers> members = scopeData.getNamedMembers();
 
-        NamedMembers namedMembers = scopeData.namedMembersMap.get(fieldName);
+        NamedMembers namedMembers = members.get(fieldName);
         if (namedMembers == null) {
             return Collections.emptySet();
         }
@@ -892,12 +892,11 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     @NotNull
     public Set<VariableDescriptor> resolveFieldGroup(@NotNull ResolverScopeData scopeData) {
 
-        scopeData.getNamedMembers();
         final PsiClass psiClass = scopeData.psiClass;
         assert psiClass != null;
 
         Set<VariableDescriptor> descriptors = Sets.newHashSet();
-        Map<Name, NamedMembers> membersForProperties = scopeData.namedMembersMap;
+        Map<Name, NamedMembers> membersForProperties = scopeData.getNamedMembers();
         for (Map.Entry<Name, NamedMembers> entry : membersForProperties.entrySet()) {
             NamedMembers namedMembers = entry.getValue();
             Name propertyName = entry.getKey();
@@ -948,7 +947,6 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             @NotNull ResolverScopeData scopeData,
             @NotNull NamedMembers namedMembers, @NotNull Name propertyName,
             @NotNull String context) {
-        scopeData.getNamedMembers();
 
         if (namedMembers.propertyDescriptors != null) {
             return;
@@ -1325,9 +1323,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     @NotNull
     public Set<FunctionDescriptor> resolveFunctionGroup(@NotNull Name methodName, @NotNull ResolverScopeData scopeData) {
 
-        scopeData.getNamedMembers();
-
-        Map<Name, NamedMembers> namedMembersMap = scopeData.namedMembersMap;
+        Map<Name, NamedMembers> namedMembersMap = scopeData.getNamedMembers();
 
         NamedMembers namedMembers = namedMembersMap.get(methodName);
         if (namedMembers != null && namedMembers.methods != null) {
@@ -1371,8 +1367,6 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     private SimpleFunctionDescriptor resolveMethodToFunctionDescriptor(
             @NotNull final PsiClass psiClass, final PsiMethodWrapper method,
             @NotNull ResolverScopeData scopeData, BindingTrace tempTrace) {
-
-        scopeData.getNamedMembers();
 
         PsiType returnPsiType = method.getReturnType();
         if (returnPsiType == null) {
@@ -1681,11 +1675,9 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
     public List<FunctionDescriptor> resolveMethods(@NotNull ResolverScopeData scopeData) {
 
-        scopeData.getNamedMembers();
-
         List<FunctionDescriptor> functions = new ArrayList<FunctionDescriptor>();
 
-        for (Map.Entry<Name, NamedMembers> entry : scopeData.namedMembersMap.entrySet()) {
+        for (Map.Entry<Name, NamedMembers> entry : scopeData.getNamedMembers().entrySet()) {
             Name methodName = entry.getKey();
             NamedMembers namedMembers = entry.getValue();
             resolveNamedGroupFunctions(scopeData.classOrNamespaceDescriptor, scopeData.psiClass,

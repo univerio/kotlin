@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.lang.resolve.java;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.FunctionDescriptor;
 import org.jetbrains.jet.lang.descriptors.VariableDescriptor;
@@ -28,7 +29,7 @@ import java.util.Set;
 * @author Stepan Koltsov
 */
 class NamedMembers {
-    List<PsiMethodWrapper> methods = new ArrayList<PsiMethodWrapper>(0);
+    @NotNull final List<PsiMethodWrapper> methods = new ArrayList<PsiMethodWrapper>(0);
 
     @Nullable
     List<PropertyAccessorData> propertyAccessors;
