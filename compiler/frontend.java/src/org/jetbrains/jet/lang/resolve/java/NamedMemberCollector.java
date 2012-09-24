@@ -21,6 +21,7 @@ import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiType;
 import org.jetbrains.jet.lang.resolve.java.prop.PropertyNameUtils;
 import org.jetbrains.jet.lang.resolve.java.prop.PropertyParseResult;
+import org.jetbrains.jet.lang.resolve.java.psi.*;
 import org.jetbrains.jet.lang.resolve.name.Name;
 
 import java.util.HashMap;

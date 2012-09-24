@@ -37,6 +37,7 @@ import org.jetbrains.jet.lang.resolve.java.kt.DescriptorKindUtils;
 import org.jetbrains.jet.lang.resolve.java.kt.JetClassAnnotation;
 import org.jetbrains.jet.lang.resolve.java.kt.JetMethodAnnotation;
 import org.jetbrains.jet.lang.resolve.java.kt.PsiAnnotationWithFlags;
+import org.jetbrains.jet.lang.resolve.java.psi.*;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.FqNameBase;
 import org.jetbrains.jet.lang.resolve.name.FqNameUnsafe;
@@ -1064,12 +1065,12 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
                 isVar = members.setter != null;
             }
 
-            Visibility visibility = resolveVisibility(anyMember.getMember().psiMember, null);
+            Visibility visibility = resolveVisibility(anyMember.getMember().getPsiMember(), null);
             CallableMemberDescriptor.Kind kind = CallableMemberDescriptor.Kind.DECLARATION;
 
             if (members.getter != null && members.getter.getMember() instanceof PsiMethodWrapper) {
                 JetMethodAnnotation jetMethod = ((PsiMethodWrapper) members.getter.getMember()).getJetMethod();
-                visibility = resolveVisibility(anyMember.getMember().psiMember, jetMethod);
+                visibility = resolveVisibility(anyMember.getMember().getPsiMember(), jetMethod);
                 kind = DescriptorKindUtils.flagsToKind(jetMethod.kind());
             }
 
@@ -1078,7 +1079,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             boolean isEnumEntry = DescriptorUtils.isEnumClassObject(realOwner);
             PropertyDescriptor propertyDescriptor = new PropertyDescriptor(
                     realOwner,
-                    resolveAnnotations(anyMember.getMember().psiMember),
+                    resolveAnnotations(anyMember.getMember().getPsiMember()),
                     resolveModality(anyMember.getMember(), isFinal || isEnumEntry),
                     visibility,
                     isVar,
@@ -1104,7 +1105,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             if (members.getter != null) {
                 getterDescriptor = new PropertyGetterDescriptor(
                         propertyDescriptor,
-                        resolveAnnotations(members.getter.getMember().psiMember),
+                        resolveAnnotations(members.getter.getMember().getPsiMember()),
                         Modality.OPEN,
                         visibility,
                         true,
@@ -1112,14 +1113,14 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
                         kind);
             }
             if (members.setter != null) {
-                Visibility setterVisibility = resolveVisibility(members.setter.getMember().psiMember, null);
+                Visibility setterVisibility = resolveVisibility(members.setter.getMember().getPsiMember(), null);
                 if (members.setter.getMember() instanceof PsiMethodWrapper) {
-                    setterVisibility = resolveVisibility(members.setter.getMember().psiMember,
+                    setterVisibility = resolveVisibility(members.setter.getMember().getPsiMember(),
                                                          ((PsiMethodWrapper) members.setter.getMember()).getJetMethod());
                 }
                 setterDescriptor = new PropertySetterDescriptor(
                         propertyDescriptor,
-                        resolveAnnotations(members.setter.getMember().psiMember),
+                        resolveAnnotations(members.setter.getMember().getPsiMember()),
                         Modality.OPEN,
                         setterVisibility,
                         true,
@@ -1189,7 +1190,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             }
 
             if (kind == CallableMemberDescriptor.Kind.DECLARATION) {
-                trace.record(BindingContext.VARIABLE, anyMember.getMember().psiMember, propertyDescriptor);
+                trace.record(BindingContext.VARIABLE, anyMember.getMember().getPsiMember(), propertyDescriptor);
             }
             
             propertiesFromCurrent.add(propertyDescriptor);

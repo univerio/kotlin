@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.resolve.java;
+package org.jetbrains.jet.lang.resolve.java.psi;
 
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
@@ -31,19 +31,23 @@ import java.util.List;
 
 /**
  * @author Stepan Koltsov
+ * @author alex.tkachman
  */
 public class PsiMethodWrapper extends PsiMemberWrapper {
 
+    private JetMethodAnnotation jetMethod;
     private final boolean kotlin;
+    private JetConstructorAnnotation jetConstructor;
+    private KotlinSignatureAnnotation signatureAnnotation;
+    private List<PsiParameterWrapper> parameters;
 
     public PsiMethodWrapper(@NotNull PsiMethod psiMethod, boolean kotlin) {
         super(psiMethod);
         this.kotlin = kotlin;
     }
     
-    private List<PsiParameterWrapper> parameters;
     @NotNull
-    public List<PsiParameterWrapper> getParameters() {
+    public final List<PsiParameterWrapper> getParameters() {
         if (parameters == null) {
             PsiParameter[] psiParameters = getPsiMethod().getParameterList().getParameters();
             parameters = new ArrayList<PsiParameterWrapper>(psiParameters.length);
@@ -56,31 +60,28 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
     }
 
     @NotNull
-    public PsiParameterWrapper getParameter(int i) {
+    public final PsiParameterWrapper getParameter(int i) {
         return getParameters().get(i);
     }
 
-    private JetMethodAnnotation jetMethod;
     @NotNull
-    public JetMethodAnnotation getJetMethod() {
+    public final JetMethodAnnotation getJetMethod() {
         if (jetMethod == null) {
             jetMethod = JetMethodAnnotation.get(getPsiMethod(), kotlin);
         }
         return jetMethod;
     }
 
-    private JetConstructorAnnotation jetConstructor;
     @NotNull
-    public JetConstructorAnnotation getJetConstructor() {
+    public final JetConstructorAnnotation getJetConstructor() {
         if (jetConstructor == null) {
             jetConstructor = JetConstructorAnnotation.get(getPsiMethod(), kotlin);
         }
         return jetConstructor;
     }
 
-    private KotlinSignatureAnnotation signatureAnnotation;
     @NotNull
-    public KotlinSignatureAnnotation getSignatureAnnotation() {
+    public final KotlinSignatureAnnotation getSignatureAnnotation() {
         if (signatureAnnotation == null) {
             signatureAnnotation = KotlinSignatureAnnotation.get(getPsiMethod());
         }
@@ -93,12 +94,12 @@ public class PsiMethodWrapper extends PsiMemberWrapper {
     }
 
     @NotNull
-    public PsiMethod getPsiMethod() {
+    public final PsiMethod getPsiMethod() {
         return (PsiMethod) psiMember;
     }
 
     @Nullable
-    public PsiType getReturnType() {
+    public final PsiType getReturnType() {
         return getPsiMethod().getReturnType();
     }
 }

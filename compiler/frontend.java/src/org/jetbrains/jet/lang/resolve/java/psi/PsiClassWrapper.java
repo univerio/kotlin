@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.resolve.java;
+package org.jetbrains.jet.lang.resolve.java.psi;
 
 import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +22,7 @@ import org.jetbrains.jet.lang.resolve.java.kt.JetClassAnnotation;
 
 /**
  * @author Stepan Koltsov
+ * @author alex.tkachman
  */
 public class PsiClassWrapper {
 
@@ -34,17 +35,17 @@ public class PsiClassWrapper {
         this.psiClass = psiClass;
     }
 
-    public String getQualifiedName() {
+    public final String getQualifiedName() {
         return psiClass.getQualifiedName();
     }
 
     @NotNull
-    public PsiClass getPsiClass() {
+    public final PsiClass getPsiClass() {
         return psiClass;
     }
     
     @NotNull
-    public JetClassAnnotation getJetClassAnnotation() {
+    public final JetClassAnnotation getJetClassAnnotation() {
         if (jetClassAnnotation == null) {
             jetClassAnnotation = JetClassAnnotation.get(psiClass);
         }

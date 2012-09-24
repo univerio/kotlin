@@ -16,9 +16,11 @@
 
 package org.jetbrains.jet.lang.resolve.java;
 
-import com.intellij.psi.HierarchicalMethodSignature;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jet.lang.resolve.java.psi.PsiFieldWrapper;
+import org.jetbrains.jet.lang.resolve.java.psi.PsiMemberWrapper;
+import org.jetbrains.jet.lang.resolve.java.psi.PsiMethodWrapper;
 
 /**
  * @author Stepan Koltsov

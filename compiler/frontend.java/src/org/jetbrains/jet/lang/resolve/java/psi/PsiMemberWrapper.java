@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.resolve.java;
+package org.jetbrains.jet.lang.resolve.java.psi;
 
 import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiModifier;
@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Stepan Koltsov
+ * @author alex.tkachman
  */
 public abstract class PsiMemberWrapper {
 
@@ -33,25 +34,25 @@ public abstract class PsiMemberWrapper {
     }
 
     @NotNull
-    public PsiMember getPsiMember() {
+    public final PsiMember getPsiMember() {
         return psiMember;
     }
 
-    public boolean isStatic() {
+    public final boolean isStatic() {
         return psiMember.hasModifierProperty(PsiModifier.STATIC);
     }
 
-    public boolean isPrivate() {
+    public final boolean isPrivate() {
         return psiMember.hasModifierProperty(PsiModifier.PRIVATE);
     }
 
-    public boolean isFinal() {
+    public final boolean isFinal() {
         return psiMember.hasModifierProperty(PsiModifier.FINAL);
     }
 
     public abstract boolean isAbstract();
 
-    public String getName() {
+    public final String getName() {
         return psiMember.getName();
     }
 

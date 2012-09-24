@@ -14,25 +14,32 @@
  * limitations under the License.
  */
 
-package org.jetbrains.jet.lang.resolve.java;
+package org.jetbrains.jet.lang.resolve.java.psi;
 
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiPackage;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMember;
+import com.intellij.psi.PsiType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.resolve.name.FqName;
 
 /**
  * @author Stepan Koltsov
+ * @author alex.tkachman
  */
-public interface PsiClassFinder {
-    enum RuntimeClassesHandleMode {
-        THROW,
-        IGNORE,
+public class PsiFieldWrapper extends PsiMemberWrapper {
+    public PsiFieldWrapper(@NotNull PsiMember psiMember) {
+        super(psiMember);
+    }
+    
+    public final PsiField getPsiField() {
+        return (PsiField) psiMember;
+    }
+    
+    public final PsiType getType() {
+        return getPsiField().getType();
     }
 
-    @Nullable
-    PsiClass findPsiClass(@NotNull FqName fqName, @NotNull RuntimeClassesHandleMode runtimeClassesHandleMode);
-    @Nullable
-    PsiPackage findPsiPackage(@NotNull FqName fqName);
+    @Override
+    public boolean isAbstract() {
+        return false;
+    }
 }
