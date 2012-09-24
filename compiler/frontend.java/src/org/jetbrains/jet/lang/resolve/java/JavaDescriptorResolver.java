@@ -605,7 +605,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     private static boolean isKotlinClass(@NotNull PsiClass psiClass) {
-        return new PsiClassWrapper(psiClass).getJetClass().isDefined() || psiClass.getName().equals(JvmAbi.PACKAGE_CLASS);
+        return new PsiClassWrapper(psiClass).getJetClassAnnotation().isDefined() || psiClass.getName().equals(JvmAbi.PACKAGE_CLASS);
     }
 
     private static boolean isInnerEnum(@NotNull PsiClass innerClass, DeclarationDescriptor owner) {
@@ -705,10 +705,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
         String context = "class " + psiClass.getQualifiedName();
 
-        if (psiClass.getJetClass().signature().length() > 0) {
+        if (psiClass.getJetClassAnnotation().signature().length() > 0) {
             final TypeVariableResolver typeVariableResolver = TypeVariableResolvers.typeVariableResolverFromTypeParameters(typeParameters, classDescriptor, context);
             
-            new JetSignatureReader(psiClass.getJetClass().signature()).accept(new JetSignatureExceptionsAdapter() {
+            new JetSignatureReader(psiClass.getJetClassAnnotation().signature()).accept(new JetSignatureExceptionsAdapter() {
                 @Override
                 public JetSignatureVisitor visitFormalTypeParameter(String name, TypeInfoVariance variance, boolean reified) {
                     // TODO: collect
