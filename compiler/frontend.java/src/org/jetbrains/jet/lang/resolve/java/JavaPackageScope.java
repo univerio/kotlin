@@ -34,7 +34,7 @@ public class JavaPackageScope extends JavaClassOrPackageScope {
     public JavaPackageScope(
             @NotNull FqName packageFQN,
             @NotNull JavaSemanticServices semanticServices,
-            @NotNull JavaDescriptorResolver.ResolverScopeData resolverNamespaceData) {
+            @NotNull ResolverScopeData resolverNamespaceData) {
         super(semanticServices, resolverNamespaceData);
         this.packageFQN = packageFQN;
 

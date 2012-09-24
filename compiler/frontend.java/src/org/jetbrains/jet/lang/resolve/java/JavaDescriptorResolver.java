@@ -89,155 +89,6 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         }
     };
 
-
-    static abstract class ResolverScopeData {
-        @Nullable
-        final PsiClass psiClass;
-        @Nullable
-        final PsiPackage psiPackage;
-        @Nullable
-        final FqName fqName;
-        final boolean staticMembers;
-        final boolean kotlin;
-        final ClassOrNamespaceDescriptor classOrNamespaceDescriptor;
-
-        protected ResolverScopeData(@Nullable PsiClass psiClass, @Nullable PsiPackage psiPackage, @Nullable FqName fqName, boolean staticMembers, @NotNull ClassOrNamespaceDescriptor descriptor) {
-            checkPsiClassIsNotJet(psiClass);
-
-            this.psiClass = psiClass;
-            this.psiPackage = psiPackage;
-            this.fqName = fqName;
-
-            if (psiClass == null && psiPackage == null) {
-                throw new IllegalStateException("both psiClass and psiPackage cannot be null");
-            }
-
-            this.staticMembers = staticMembers;
-            this.kotlin = psiClass != null && isKotlinClass(psiClass);
-            classOrNamespaceDescriptor = descriptor;
-
-            if (fqName != null && fqName.lastSegmentIs(Name.identifier(JvmAbi.PACKAGE_CLASS)) && psiClass != null && kotlin) {
-                throw new IllegalStateException("Kotlin namespace cannot have last segment " + JvmAbi.PACKAGE_CLASS + ": " + fqName);
-            }
-        }
-
-        protected ResolverScopeData(boolean negative) {
-            if (!negative) {
-                throw new IllegalStateException();
-            }
-            this.psiClass = null;
-            this.psiPackage = null;
-            this.fqName = null;
-            this.staticMembers = false;
-            this.kotlin = false;
-            this.classOrNamespaceDescriptor = null;
-        }
-
-        @NotNull
-        public PsiElement getPsiPackageOrPsiClass() {
-            if (psiPackage != null) {
-                return psiPackage;
-            }
-            else {
-                assert psiClass != null;
-                return psiClass;
-            }
-        }
-
-        private Map<Name, NamedMembers> namedMembersMap;
-
-        @NotNull
-        public abstract List<TypeParameterDescriptor> getTypeParameters();
-    }
-
-    /** Class with instance members */
-    static class ResolverBinaryClassData extends ResolverClassData {
-
-        ResolverBinaryClassData(@NotNull PsiClass psiClass, @Nullable FqName fqName, @NotNull ClassDescriptorFromJvmBytecode classDescriptor) {
-            super(psiClass, null, fqName, false, classDescriptor);
-        }
-
-        ResolverBinaryClassData(boolean negative) {
-            super(negative);
-        }
-
-        static final ResolverClassData NEGATIVE = new ResolverBinaryClassData(true);
-
-    }
-
-    static class ResolverClassData extends ResolverScopeData {
-
-        final ClassDescriptorFromJvmBytecode classDescriptor;
-
-        List<JavaDescriptorSignatureResolver.TypeParameterDescriptorInitialization> typeParameters;
-
-        protected ResolverClassData(boolean negative) {
-            super(negative);
-            this.classDescriptor = null;
-        }
-        
-
-        protected ResolverClassData(
-                @Nullable PsiClass psiClass,
-                @Nullable PsiPackage psiPackage,
-                @Nullable FqName fqName,
-                boolean staticMembers,
-                @NotNull ClassDescriptorFromJvmBytecode descriptor
-        ) {
-            super(psiClass, psiPackage, fqName, staticMembers, descriptor);
-            classDescriptor = descriptor;
-        }
-
-        @NotNull
-        public ClassDescriptor getClassDescriptor() {
-            return classDescriptor;
-        }
-
-        @NotNull
-        @Override
-        public List<TypeParameterDescriptor> getTypeParameters() {
-            return getClassDescriptor().getTypeConstructor().getParameters();
-        }
-
-    }
-
-
-    static class ResolverSyntheticClassObjectClassData extends ResolverClassData {
-
-        protected ResolverSyntheticClassObjectClassData(
-                @Nullable PsiClass psiClass,
-                @Nullable FqName fqName,
-                @NotNull ClassDescriptorFromJvmBytecode descriptor
-        ) {
-            super(psiClass, null, fqName, true, descriptor);
-        }
-    }
-
-    /** Either package or class with static members */
-    static class ResolverNamespaceData extends ResolverScopeData {
-        private final NamespaceDescriptor namespaceDescriptor;
-
-        ResolverNamespaceData(@Nullable PsiClass psiClass, @Nullable PsiPackage psiPackage, @NotNull FqName fqName, @NotNull NamespaceDescriptor namespaceDescriptor) {
-            super(psiClass, psiPackage, fqName, true, namespaceDescriptor);
-            this.namespaceDescriptor = namespaceDescriptor;
-        }
-
-        private ResolverNamespaceData(boolean negative) {
-            super(negative);
-            this.namespaceDescriptor = null;
-        }
-
-        static final ResolverNamespaceData NEGATIVE = new ResolverNamespaceData(true);
-
-        private JavaPackageScope memberScope;
-
-        @NotNull
-        @Override
-        public List<TypeParameterDescriptor> getTypeParameters() {
-            return new ArrayList<TypeParameterDescriptor>(0);
-        }
-    }
-
     // NOTE: this complexity is introduced because class descriptors do not always have valid fqnames (class objects) 
     protected final Map<FqNameBase, ResolverClassData> classDescriptorCache = new THashMap<FqNameBase, ResolverClassData>(new TObjectHashingStrategy<FqNameBase>() {
         @Override
@@ -604,7 +455,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         return classObjectDescriptor;
     }
 
-    private static boolean isKotlinClass(@NotNull PsiClass psiClass) {
+    static boolean isKotlinClass(@NotNull PsiClass psiClass) {
         return new PsiClassWrapper(psiClass).getJetClassAnnotation().isDefined() || psiClass.getName().equals(JvmAbi.PACKAGE_CLASS);
     }
 
@@ -1024,7 +875,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             return Collections.emptySet();
         }
 
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
 
         NamedMembers namedMembers = scopeData.namedMembersMap.get(fieldName);
         if (namedMembers == null) {
@@ -1041,7 +892,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     @NotNull
     public Set<VariableDescriptor> resolveFieldGroup(@NotNull ResolverScopeData scopeData) {
 
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
         final PsiClass psiClass = scopeData.psiClass;
         assert psiClass != null;
 
@@ -1097,7 +948,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             @NotNull ResolverScopeData scopeData,
             @NotNull NamedMembers namedMembers, @NotNull Name propertyName,
             @NotNull String context) {
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
 
         if (namedMembers.propertyDescriptors != null) {
             return;
@@ -1471,16 +1322,10 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         return r;
     }
 
-    private static void getResolverScopeData(@NotNull ResolverScopeData scopeData) {
-        if (scopeData.namedMembersMap == null) {
-            scopeData.namedMembersMap = JavaDescriptorResolverHelper.getNamedMembers(scopeData);
-        }
-    }
-
     @NotNull
     public Set<FunctionDescriptor> resolveFunctionGroup(@NotNull Name methodName, @NotNull ResolverScopeData scopeData) {
 
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
 
         Map<Name, NamedMembers> namedMembersMap = scopeData.namedMembersMap;
 
@@ -1527,7 +1372,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             @NotNull final PsiClass psiClass, final PsiMethodWrapper method,
             @NotNull ResolverScopeData scopeData, BindingTrace tempTrace) {
 
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
 
         PsiType returnPsiType = method.getReturnType();
         if (returnPsiType == null) {
@@ -1836,7 +1681,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
 
     public List<FunctionDescriptor> resolveMethods(@NotNull ResolverScopeData scopeData) {
 
-        getResolverScopeData(scopeData);
+        scopeData.getNamedMembers();
 
         List<FunctionDescriptor> functions = new ArrayList<FunctionDescriptor>();
 

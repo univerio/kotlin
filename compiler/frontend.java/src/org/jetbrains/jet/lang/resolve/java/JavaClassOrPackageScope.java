@@ -37,14 +37,14 @@ public abstract class JavaClassOrPackageScope extends JetScopeImpl {
     @NotNull
     protected final JavaSemanticServices semanticServices;
     @NotNull
-    protected final JavaDescriptorResolver.ResolverScopeData resolverScopeData;
+    protected final ResolverScopeData resolverScopeData;
 
     // cache
     private Collection<DeclarationDescriptor> allDescriptors;
 
     protected JavaClassOrPackageScope(
             @NotNull JavaSemanticServices semanticServices,
-            @NotNull JavaDescriptorResolver.ResolverScopeData resolverScopeData) {
+            @NotNull ResolverScopeData resolverScopeData) {
         this.semanticServices = semanticServices;
         this.resolverScopeData = resolverScopeData;
     }

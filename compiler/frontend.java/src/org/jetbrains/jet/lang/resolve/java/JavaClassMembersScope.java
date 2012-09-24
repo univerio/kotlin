@@ -41,7 +41,7 @@ public class JavaClassMembersScope extends JavaClassOrPackageScope {
 
     public JavaClassMembersScope(
             @NotNull JavaSemanticServices semanticServices,
-            @NotNull JavaDescriptorResolver.ResolverScopeData resolverScopeData) {
+            @NotNull ResolverScopeData resolverScopeData) {
         super(semanticServices, resolverScopeData);
 
         if (resolverScopeData.psiClass == null) {

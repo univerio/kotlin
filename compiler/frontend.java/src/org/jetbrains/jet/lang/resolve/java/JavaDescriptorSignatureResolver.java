@@ -309,7 +309,7 @@ public class JavaDescriptorSignatureResolver {
     }
 
 
-    List<TypeParameterDescriptorInitialization> createUninitializedClassTypeParameters(PsiClass psiClass, JavaDescriptorResolver.ResolverClassData classData) {
+    List<TypeParameterDescriptorInitialization> createUninitializedClassTypeParameters(PsiClass psiClass, ResolverClassData classData) {
         JetClassAnnotation jetClassAnnotation = JetClassAnnotation.get(psiClass);
 
         if (jetClassAnnotation.signature().length() > 0) {
