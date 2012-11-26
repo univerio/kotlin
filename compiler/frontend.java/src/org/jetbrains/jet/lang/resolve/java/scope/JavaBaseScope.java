@@ -161,9 +161,6 @@ public abstract class JavaBaseScope extends JetScopeImpl {
         if (declarationProvider instanceof PackagePsiDeclarationProviderImpl) {
             return ((PackagePsiDeclarationProviderImpl) declarationProvider).getPsiPackage();
         }
-        if (declarationProvider instanceof KotlinNamespacePsiDeclarationProvider) {
-            return ((KotlinNamespacePsiDeclarationProvider) declarationProvider).getPsiPackage();
-        }
         throw new IllegalStateException();
     }
 
