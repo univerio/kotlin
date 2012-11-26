@@ -40,7 +40,6 @@ public final class KotlinNamespacePsiDeclarationProvider extends ClassPsiDeclara
     }
 
     @NotNull
-    @Override
     public PsiPackage getPsiPackage() {
         return packagePsiDeclarationProvider.getPsiPackage();
     }
