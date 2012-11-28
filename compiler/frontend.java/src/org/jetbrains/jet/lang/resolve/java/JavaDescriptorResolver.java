@@ -16,16 +16,18 @@
 
 package org.jetbrains.jet.lang.resolve.java;
 
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.descriptors.*;
 import org.jetbrains.jet.lang.resolve.DescriptorUtils;
+import org.jetbrains.jet.lang.resolve.ModuleDescriptorProvider;
 import org.jetbrains.jet.lang.resolve.java.provider.ClassPsiDeclarationProvider;
 import org.jetbrains.jet.lang.resolve.java.provider.PsiDeclarationProvider;
 import org.jetbrains.jet.lang.resolve.java.resolver.*;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
-import org.jetbrains.jet.lang.resolve.scopes.JetScope;
 import org.jetbrains.jet.lang.types.DependencyClassByQualifiedNameResolver;
 import org.jetbrains.jet.lang.types.JetType;
 
@@ -34,11 +36,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.JAVA_MODULE;
+
+
 /**
  * @author abreslav
  */
 public class JavaDescriptorResolver implements DependencyClassByQualifiedNameResolver {
 
+    //TODO: always reference this java root
     public static final Name JAVA_ROOT = Name.special("<java_root>");
 
     public static Visibility PACKAGE_VISIBILITY = new Visibility("package", false) {
@@ -47,7 +53,8 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             NamespaceDescriptor parentPackage = DescriptorUtils.getParentOfType(what, NamespaceDescriptor.class);
             NamespaceDescriptor fromPackage = DescriptorUtils.getParentOfType(from, NamespaceDescriptor.class, false);
             assert parentPackage != null;
-            return parentPackage.equals(fromPackage);
+            assert fromPackage != null;
+            return DescriptorUtils.getFQName(parentPackage).equals(DescriptorUtils.getFQName(fromPackage));
         }
 
         @Override
@@ -64,6 +71,7 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     private JavaFunctionResolver functionResolver;
     private JavaNamespaceResolver namespaceResolver;
     private JavaInnerClassResolver innerClassResolver;
+    private ModuleDescriptorProvider moduleDescriptorProvider;
 
     @Inject
     public void setFunctionResolver(JavaFunctionResolver functionResolver) {
@@ -95,6 +103,11 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
         this.innerClassResolver = innerClassResolver;
     }
 
+    @Inject
+    public void setModuleDescriptorProvider(ModuleDescriptorProvider moduleDescriptorProvider) {
+        this.moduleDescriptorProvider = moduleDescriptorProvider;
+    }
+
     @Nullable
     public ClassDescriptor resolveClass(@NotNull FqName qualifiedName, @NotNull DescriptorSearchRule searchRule) {
         return classResolver.resolveClass(qualifiedName, searchRule);
@@ -113,18 +126,21 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
     }
 
     @Nullable
-    public NamespaceDescriptor resolveNamespace(@NotNull FqName qualifiedName, @NotNull DescriptorSearchRule searchRule) {
-        return namespaceResolver.resolveNamespace(qualifiedName, searchRule);
+    public NamespaceDescriptor resolveNamespace(
+            @NotNull FqName qualifiedName,
+            @NotNull ModuleDescriptor parentModule
+    ) {
+        return namespaceResolver.resolveNamespace(qualifiedName, parentModule);
+    }
+
+    @NotNull
+    public Collection<NamespaceDescriptor> resolveNamespaces(@NotNull FqName fqName) {
+        return namespaceResolver.resolveNamespace(fqName).values();
     }
 
     @Override
     public NamespaceDescriptor resolveNamespace(@NotNull FqName qualifiedName) {
-        return namespaceResolver.resolveNamespace(qualifiedName);
-    }
-
-    @Nullable
-    public JetScope getJavaPackageScope(@NotNull NamespaceDescriptor namespaceDescriptor) {
-        return namespaceResolver.getJavaPackageScopeForExistingNamespaceDescriptor(namespaceDescriptor);
+        return namespaceResolver.resolveNamespace(qualifiedName).get(JAVA_MODULE);
     }
 
     @NotNull
@@ -176,5 +192,13 @@ public class JavaDescriptorResolver implements DependencyClassByQualifiedNameRes
             @NotNull ClassPsiDeclarationProvider declarationProvider)
     {
         return innerClassResolver.resolveInnerClasses(owner, declarationProvider);
+    }
+
+    @NotNull
+    public ModuleDescriptor getModuleForClass(@NotNull PsiClass psiClass) {
+        VirtualFile virtualFile = psiClass.getContainingFile().getVirtualFile();
+        //TODO: throw meaningful exception?
+        assert virtualFile != null;
+        return moduleDescriptorProvider.getModule(virtualFile);
     }
 }
