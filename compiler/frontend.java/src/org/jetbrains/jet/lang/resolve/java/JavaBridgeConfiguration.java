@@ -73,7 +73,7 @@ public class JavaBridgeConfiguration implements ModuleConfiguration {
     @Override
     public void extendNamespaceScope(@NotNull BindingTrace trace, @NotNull NamespaceDescriptor namespaceDescriptor, @NotNull WritableScope namespaceMemberScope) {
         Collection<NamespaceDescriptor> namespaceDescriptors = javaSemanticServices.getDescriptorResolver().resolveNamespaces(
-                DescriptorUtils.getFQName(namespaceDescriptor).toSafe());
+                DescriptorUtils.getFQName(namespaceDescriptor));
         for (NamespaceDescriptor namespaceToMergeIn : namespaceDescriptors) {
             namespaceMemberScope.importScope(namespaceToMergeIn.getMemberScope());
         }

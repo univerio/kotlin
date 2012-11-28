@@ -106,6 +106,11 @@ public class DescriptorUtils {
     }
 
     @NotNull
+    public static FqName getFQName(@NotNull NamespaceDescriptor namespaceDescriptor) {
+        return getFQName((DeclarationDescriptor) namespaceDescriptor).toSafe();
+    }
+
+    @NotNull
     public static FqNameUnsafe getFQName(@NotNull DeclarationDescriptor descriptor) {
         DeclarationDescriptor containingDeclaration = descriptor.getContainingDeclaration();
 
