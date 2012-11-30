@@ -42,6 +42,8 @@ import org.jetbrains.jet.resolve.DescriptorRenderer;
 
 import java.util.*;
 
+import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.createDefaultModuleDescriptorProvider;
+
 /**
  * @author Evgeny Gerashchenko
  * @since 3/11/12
@@ -62,7 +64,8 @@ public class DecompiledDataFactory {
     private DecompiledDataFactory(ClsFileImpl clsFile) {
         this.clsFile = clsFile;
         Project project = this.clsFile.getProject();
-        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(project);
+        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(project,
+                                                                                       createDefaultModuleDescriptorProvider(project));
         bindingContext = injector.getBindingTrace().getBindingContext();
         javaDescriptorResolver = injector.getJavaDescriptorResolver();
     }

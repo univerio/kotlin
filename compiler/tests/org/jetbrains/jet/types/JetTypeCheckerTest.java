@@ -50,6 +50,7 @@ import org.jetbrains.jet.lexer.JetTokens;
 import java.util.*;
 
 import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.JAVA_MODULE;
+import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.createDefaultModuleDescriptorProvider;
 
 /**
  * @author abreslav
@@ -607,7 +608,8 @@ public class JetTypeCheckerTest extends JetLiteFixture {
         WritableScopeImpl writableScope = new WritableScopeImpl(
                 scope, scope.getContainingDeclaration(), RedeclarationHandler.DO_NOTHING, "JetTypeCheckerTest.addImports");
         writableScope.importScope(builtIns.getBuiltInsScope());
-        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(getProject());
+        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(getProject(),
+                                                                                       createDefaultModuleDescriptorProvider(getProject()));
         JavaDescriptorResolver javaDescriptorResolver = injector.getJavaDescriptorResolver();
         writableScope.importScope(javaDescriptorResolver.resolveNamespace(FqName.ROOT, JAVA_MODULE).getMemberScope());
         writableScope.importScope(javaDescriptorResolver.resolveNamespace(new FqName("java.lang"), JAVA_MODULE).getMemberScope());

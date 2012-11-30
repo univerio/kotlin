@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.createDefaultModuleDescriptorProvider;
+
 public class JdkAnnotationsSanityTest extends KotlinTestWithEnvironment {
     private VirtualFile kotlinAnnotationsRoot;
     private VirtualFile ideaAnnotationsRoot;
@@ -72,7 +74,8 @@ public class JdkAnnotationsSanityTest extends KotlinTestWithEnvironment {
     }
 
     public void testNoErrorsInAlternativeSignatures() {
-        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(getProject());
+        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(getProject(),
+                                                                                       createDefaultModuleDescriptorProvider(getProject()));
 
         final BindingContext bindingContext = injector.getBindingTrace().getBindingContext();
         JavaDescriptorResolver javaDescriptorResolver = injector.getJavaDescriptorResolver();

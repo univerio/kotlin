@@ -46,6 +46,7 @@ import org.jetbrains.jet.resolve.DescriptorRenderer;
 
 import javax.swing.*;
 
+import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.createDefaultModuleDescriptorProvider;
 import static org.jetbrains.jet.plugin.codeInsight.ktSignature.KotlinSignatureUtil.*;
 
 /**
@@ -163,7 +164,8 @@ public class AddKotlinSignatureAnnotation extends BaseIntentionAction implements
 
     @NotNull
     private static String getDefaultSignature(@NotNull Project project, @NotNull PsiMember psiMember) {
-        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(project);
+        InjectorForJavaSemanticServices injector = new InjectorForJavaSemanticServices(project,
+                                                                                       createDefaultModuleDescriptorProvider(project));
         JavaDescriptorResolver javaDescriptorResolver = injector.getJavaDescriptorResolver();
 
         PsiClass containingClass = psiMember.getContainingClass();
