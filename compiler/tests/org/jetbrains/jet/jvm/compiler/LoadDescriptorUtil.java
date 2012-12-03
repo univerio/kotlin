@@ -30,7 +30,6 @@ import org.jetbrains.jet.analyzer.AnalyzeExhaust;
 import org.jetbrains.jet.cli.jvm.compiler.CompileEnvironmentUtil;
 import org.jetbrains.jet.cli.jvm.compiler.JetCoreEnvironment;
 import org.jetbrains.jet.codegen.ClassFileFactory;
-import org.jetbrains.jet.codegen.GenerationUtils;
 import org.jetbrains.jet.codegen.forTestCompile.ForTestCompileRuntime;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.config.CompilerConfiguration;
@@ -51,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import static org.jetbrains.jet.JetTestUtils.createEnvironmentWithMockJdkAndIdeaAnnotations;
+import static org.jetbrains.jet.codegen.GenerationUtils.compileFilesGetGenerationState;
 import static org.jetbrains.jet.lang.psi.JetPsiFactory.createFile;
 import static org.jetbrains.jet.lang.resolve.ModuleDescriptorProviderFactory.createDefaultModuleDescriptorProvider;
 
@@ -84,9 +84,19 @@ public final class LoadDescriptorUtil {
             @NotNull Disposable disposable,
             @NotNull ConfigurationKind configurationKind
     ) throws IOException {
-        JetFileAndExhaust fileAndExhaust = JetFileAndExhaust.createJetFileAndAnalyze(kotlinFile, disposable, configurationKind);
-        GenerationState state = GenerationUtils.compileFilesGetGenerationState(fileAndExhaust.getJetFile().getProject(), fileAndExhaust.getExhaust(), Collections.singletonList(
-                fileAndExhaust.getJetFile()));
+        return compileKotlinToDirAndGetAnalyzeExhaust(kotlinFile, outDir, createEnvironmentWithMockJdkAndIdeaAnnotations(disposable,
+                                                                                                                         configurationKind));
+    }
+
+    @NotNull
+    public static AnalyzeExhaust compileKotlinToDirAndGetAnalyzeExhaust(
+            @NotNull File kotlinFile,
+            @NotNull File outDir,
+            @NotNull JetCoreEnvironment environment
+    ) throws IOException {
+        JetFileAndExhaust fileAndExhaust = JetFileAndExhaust.createJetFileAndAnalyze(kotlinFile, environment);
+        GenerationState state = compileFilesGetGenerationState(fileAndExhaust.getJetFile().getProject(), fileAndExhaust.getExhaust(),
+                                                               Collections.singletonList(fileAndExhaust.getJetFile()));
         ClassFileFactory classFileFactory = state.getFactory();
         CompileEnvironmentUtil.writeToOutputDirectory(classFileFactory, outDir);
         return fileAndExhaust.getExhaust();
@@ -134,8 +144,13 @@ public final class LoadDescriptorUtil {
     }
 
     @NotNull
-    public static NamespaceDescriptor analyzeKotlinAndLoadTestNamespace(@NotNull File ktFile, @NotNull Disposable disposable, @NotNull ConfigurationKind configurationKind) throws Exception {
-        JetFileAndExhaust fileAndExhaust = JetFileAndExhaust.createJetFileAndAnalyze(ktFile, disposable, configurationKind);
+    public static NamespaceDescriptor analyzeKotlinAndLoadTestNamespace(
+            @NotNull File ktFile,
+            @NotNull Disposable disposable,
+            @NotNull ConfigurationKind configurationKind
+    ) throws Exception {
+        JetFileAndExhaust fileAndExhaust = JetFileAndExhaust.createJetFileAndAnalyze(ktFile, createEnvironmentWithMockJdkAndIdeaAnnotations(
+                disposable, configurationKind));
         //noinspection ConstantConditions
         return fileAndExhaust.getExhaust().getBindingContext().get(BindingContext.FQNAME_TO_NAMESPACE_DESCRIPTOR, TEST_PACKAGE_FQNAME);
     }
@@ -143,10 +158,11 @@ public final class LoadDescriptorUtil {
     private static class JetFileAndExhaust {
 
         @NotNull
-        public static JetFileAndExhaust createJetFileAndAnalyze(@NotNull File kotlinFile, @NotNull Disposable disposable, @NotNull ConfigurationKind configurationKind)
+        public static JetFileAndExhaust createJetFileAndAnalyze(
+                @NotNull File kotlinFile, @NotNull JetCoreEnvironment environment
+        )
                 throws IOException {
-            JetCoreEnvironment jetCoreEnvironment = createEnvironmentWithMockJdkAndIdeaAnnotations(disposable, configurationKind);
-            JetFile jetFile = createFile(jetCoreEnvironment.getProject(), FileUtil.loadFile(kotlinFile, true));
+            JetFile jetFile = createFile(environment.getProject(), FileUtil.loadFile(kotlinFile, true));
             AnalyzeExhaust exhaust = AnalyzerFacadeForJVM.analyzeOneFileWithJavaIntegrationAndCheckForErrors(
                     jetFile, Collections.<AnalyzerScriptParameter>emptyList());
             return new JetFileAndExhaust(jetFile, exhaust);
@@ -158,7 +174,7 @@ public final class LoadDescriptorUtil {
         private final AnalyzeExhaust exhaust;
 
         private JetFileAndExhaust(@NotNull JetFile file, @NotNull AnalyzeExhaust exhaust) {
-            jetFile = file;
+            this.jetFile = file;
             this.exhaust = exhaust;
         }
 

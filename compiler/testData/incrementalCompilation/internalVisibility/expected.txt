@@ -1,0 +1,8 @@
+namespace test
+
+internal open class test.A : jet.Any {
+    public final /*constructor*/ fun <init>(): test.A
+}
+internal open class test.B : test.A {
+    public final /*constructor*/ fun <init>(): test.B
+}
