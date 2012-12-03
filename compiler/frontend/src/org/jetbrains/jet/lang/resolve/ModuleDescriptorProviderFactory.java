@@ -69,4 +69,31 @@ public final class ModuleDescriptorProviderFactory {
             }
         };
     }
+
+    @NotNull
+    public static ModuleDescriptorProvider createModuleDescriptorProviderForOneModule(
+            @NotNull final Project project,
+            @NotNull final ModuleDescriptor kotlinModule
+    ) {
+        return new ModuleDescriptorProvider() {
+            @NotNull
+            @Override
+            public ModuleDescriptor getModule(@NotNull VirtualFile file) {
+                return kotlinModule;
+            }
+
+            @NotNull
+            @Override
+            public Collection<ModuleDescriptor> getAllModules() {
+                return Collections.singletonList(kotlinModule);
+            }
+
+            @NotNull
+            @Override
+            public GlobalSearchScope getSearchScopeForModule(@NotNull ModuleDescriptor descriptor) {
+                assert kotlinModule == descriptor;
+                return GlobalSearchScope.allScope(project);
+            }
+        };
+    }
 }
