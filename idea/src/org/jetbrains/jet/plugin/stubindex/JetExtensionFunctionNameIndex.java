@@ -33,6 +33,8 @@ public class JetExtensionFunctionNameIndex extends StringStubIndexExtension<JetN
         return instance;
     }
 
+    private JetExtensionFunctionNameIndex() {}
+
     @NotNull
     @Override
     public StubIndexKey<String, JetNamedFunction> getKey() {

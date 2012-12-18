@@ -37,6 +37,8 @@ public class JetSuperClassIndex extends StringStubIndexExtension<JetClassOrObjec
         return ourInstance;
     }
 
+    private JetSuperClassIndex() {}
+
     @NotNull
     @Override
     public StubIndexKey<String, JetClassOrObject> getKey() {
