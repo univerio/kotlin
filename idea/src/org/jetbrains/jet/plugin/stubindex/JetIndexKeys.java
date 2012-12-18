@@ -23,6 +23,8 @@ import org.jetbrains.jet.lang.psi.*;
  * @author Nikolay Krasko
  */
 public interface JetIndexKeys {
+    StubIndexKey<String, JetFile> PACKAGE_DECLARATION_KEY = StubIndexKey.createIndexKey("jet.file.package.declaration");
+
     StubIndexKey<String, JetClassOrObject> SHORT_NAME_KEY = StubIndexKey.createIndexKey("jet.class.shortName");
     StubIndexKey<String, JetClassOrObject> SUPERCLASS_NAME_KEY = StubIndexKey.createIndexKey("jet.class.superClassName");
     StubIndexKey<String, JetClassOrObject> FQN_KEY = StubIndexKey.createIndexKey("jet.fqn");

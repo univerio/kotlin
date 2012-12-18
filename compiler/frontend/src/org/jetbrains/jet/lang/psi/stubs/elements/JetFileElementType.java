@@ -85,6 +85,6 @@ public class JetFileElementType extends IStubFileElementType<PsiJetFileStub> {
 
     @Override
     public void indexStub(final PsiJetFileStub stub, final IndexSink sink) {
-        // Don't index file
+        StubIndexServiceFactory.getInstance().indexFile(stub, sink);
     }
 }
