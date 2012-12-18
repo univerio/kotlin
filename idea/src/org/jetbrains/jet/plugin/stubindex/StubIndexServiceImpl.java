@@ -62,7 +62,7 @@ public class StubIndexServiceImpl implements StubIndexService {
 
         FqName fqName = stub.getFQName();
         if (fqName != null) {
-            sink.occurrence(JetFullClassNameIndex.getInstance().getKey(), fqName.toString());
+            sink.occurrence(JetFullClassNameIndex.getInstance().getKey(), fqName.getFqName());
         }
     }
 
@@ -81,7 +81,7 @@ public class StubIndexServiceImpl implements StubIndexService {
 
                 FqName topFQName = stub.getTopFQName();
                 if (topFQName != null) {
-                    sink.occurrence(JetTopLevelFunctionsFqnNameIndex.getInstance().getKey(), topFQName.toString());
+                    sink.occurrence(JetTopLevelFunctionsFqnNameIndex.getInstance().getKey(), topFQName.getFqName());
                 }
             }
 
@@ -96,7 +96,7 @@ public class StubIndexServiceImpl implements StubIndexService {
             if (stub.isTopLevel()) {
                 FqName topFQName = stub.getTopFQName();
                 if (topFQName != null) {
-                    sink.occurrence(JetTopLevelPropertiesFqnNameIndex.getInstance().getKey(), topFQName.toString());
+                    sink.occurrence(JetTopLevelPropertiesFqnNameIndex.getInstance().getKey(), topFQName.getFqName());
                 }
             }
 
