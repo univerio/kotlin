@@ -26,9 +26,13 @@ import org.jetbrains.jet.lang.psi.JetNamedFunction;
 import java.util.Collection;
 
 /**
+ * Stores package top level function (both extension and non-extension) full qualified names.
+ *
  * @author Nikolay Krasko
  */
 public class JetTopLevelFunctionsFqnNameIndex extends StringStubIndexExtension<JetNamedFunction> {
+    private static final StubIndexKey<String, JetNamedFunction> KEY = KotlinIndexUtil.createIndexKey(JetTopLevelFunctionsFqnNameIndex.class);
+
     private static final JetTopLevelFunctionsFqnNameIndex INSTANCE = new JetTopLevelFunctionsFqnNameIndex();
 
     public static JetTopLevelFunctionsFqnNameIndex getInstance() {
@@ -38,7 +42,7 @@ public class JetTopLevelFunctionsFqnNameIndex extends StringStubIndexExtension<J
     @NotNull
     @Override
     public StubIndexKey<String, JetNamedFunction> getKey() {
-        return JetIndexKeys.TOP_LEVEL_FUNCTIONS_FQN_NAME_KEY;
+        return KEY;
     }
 
     @Override

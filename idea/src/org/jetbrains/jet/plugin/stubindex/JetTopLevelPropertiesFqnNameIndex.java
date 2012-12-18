@@ -29,6 +29,8 @@ import java.util.Collection;
  * @author Nikolay Krasko
  */
 public class JetTopLevelPropertiesFqnNameIndex extends StringStubIndexExtension<JetProperty> {
+    private static final StubIndexKey<String, JetProperty> KEY = KotlinIndexUtil.createIndexKey(JetTopLevelPropertiesFqnNameIndex.class);
+
     private static final JetTopLevelPropertiesFqnNameIndex INSTANCE = new JetTopLevelPropertiesFqnNameIndex();
 
     public static JetTopLevelPropertiesFqnNameIndex getInstance() {
@@ -38,7 +40,7 @@ public class JetTopLevelPropertiesFqnNameIndex extends StringStubIndexExtension<
     @NotNull
     @Override
     public StubIndexKey<String, JetProperty> getKey() {
-        return JetIndexKeys.TOP_LEVEL_PROPERTY_FQN_NAME_KEY;
+        return KEY;
     }
 
     @Override
