@@ -95,7 +95,7 @@ public class JetCoreEnvironment {
 
         Extensions.getArea(project)
                 .getExtensionPoint(PsiElementFinder.EP_NAME)
-                .registerExtension(new JavaElementFinder(project));
+                .registerExtension(new JavaElementFinder(project, cliLightClassGenerationSupport));
 
         annotationsManager = new CoreExternalAnnotationsManager(project.getComponent(PsiManager.class));
         project.registerService(ExternalAnnotationsManager.class, annotationsManager);
