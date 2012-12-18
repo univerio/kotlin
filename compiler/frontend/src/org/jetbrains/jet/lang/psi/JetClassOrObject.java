@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * @author max
  */
-public interface JetClassOrObject extends PsiNameIdentifierOwner, JetDeclarationContainer, JetElement, JetModifierListOwner, JetDeclaration {
+public interface JetClassOrObject extends PsiNameIdentifierOwner, JetDeclarationContainer, JetElement, JetModifierListOwner, JetNamedDeclaration {
     @Nullable
     JetDelegationSpecifierList getDelegationSpecifierList();
 
@@ -39,6 +39,7 @@ public interface JetClassOrObject extends PsiNameIdentifierOwner, JetDeclaration
     // Objects always "have" a primary constructor
     boolean hasPrimaryConstructor();
 
+    @Override
     @Nullable
     Name getNameAsName();
 
