@@ -16,6 +16,7 @@
 
 package org.jetbrains.jet.cli.jvm.compiler;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.intellij.openapi.application.ApplicationManager;
@@ -29,14 +30,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.asJava.LightClassConstructionContext;
 import org.jetbrains.jet.asJava.LightClassGenerationSupport;
 import org.jetbrains.jet.lang.descriptors.ClassDescriptor;
+import org.jetbrains.jet.lang.descriptors.DeclarationDescriptor;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
 import org.jetbrains.jet.lang.psi.JetClassOrObject;
 import org.jetbrains.jet.lang.psi.JetDeclaration;
 import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.resolve.BindingContext;
-import org.jetbrains.jet.lang.resolve.BindingContextUtils;
-import org.jetbrains.jet.lang.resolve.BindingTrace;
-import org.jetbrains.jet.lang.resolve.BindingTraceContext;
+import org.jetbrains.jet.lang.resolve.*;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 
 import java.util.Collection;
@@ -138,5 +137,20 @@ public class CliLightClassGenerationSupport extends LightClassGenerationSupport 
             @NotNull FqName fqName, @NotNull GlobalSearchScope scope
     ) {
         return trace.get(BindingContext.FQNAME_TO_NAMESPACE_DESCRIPTOR, fqName) != null;
+    }
+
+    @NotNull
+    @Override
+    public Collection<FqName> getSubPackages(@NotNull FqName fqn, @NotNull GlobalSearchScope scope) {
+        NamespaceDescriptor namespaceDescriptor = trace.get(BindingContext.FQNAME_TO_NAMESPACE_DESCRIPTOR, fqn);
+        if (namespaceDescriptor == null) return Collections.emptyList();
+
+        Collection<DeclarationDescriptor> allDescriptors = namespaceDescriptor.getMemberScope().getAllDescriptors();
+        return Collections2.transform(allDescriptors, new Function<DeclarationDescriptor, FqName>() {
+            @Override
+            public FqName apply(DeclarationDescriptor input) {
+                return DescriptorUtils.getFQName(input).toSafe();
+            }
+        });
     }
 }
