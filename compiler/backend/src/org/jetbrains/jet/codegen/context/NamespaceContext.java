@@ -24,7 +24,7 @@ import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
  * @author alex.tkachman
 */
 public class NamespaceContext extends CodegenContext {
-    public NamespaceContext(NamespaceDescriptor contextDescriptor, CodegenContext parent, @NotNull OwnerKind kind) {
+    public NamespaceContext(@NotNull NamespaceDescriptor contextDescriptor, CodegenContext parent, @NotNull OwnerKind kind) {
         super(contextDescriptor, kind, parent, null, null, null);
     }
 
