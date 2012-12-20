@@ -74,7 +74,7 @@ public class LightClassUtil {
     /*package*/ static void logErrorWithOSInfo(@Nullable Throwable cause, @NotNull FqName fqName, @Nullable VirtualFile virtualFile) {
         String path = virtualFile == null ? "<null>" : virtualFile.getPath();
         LOG.error(
-                "Could not generate JetLightClass for " + fqName + " declared in " + path + "\n" +
+                "Could not generate LightClass for " + fqName + " declared in " + path + "\n" +
                 "built-ins dir URL is " + getBuiltInsDirResourceUrl() + "\n" +
                 "System: " + SystemInfo.OS_NAME + " " + SystemInfo.OS_VERSION + " Java Runtime: " + SystemInfo.JAVA_RUNTIME_VERSION,
                 cause);
