@@ -80,7 +80,7 @@ public class CliLightClassGenerationSupport extends LightClassGenerationSupport 
 
     @NotNull
     @Override
-    public LightClassConstructionContext analyzeRelevantCode(@NotNull JetFile file) {
+    public LightClassConstructionContext analyzeRelevantCode(@NotNull Collection<JetFile> files) {
         return new LightClassConstructionContext(getTrace().getBindingContext(), null);
     }
 
