@@ -18,11 +18,12 @@ package org.jetbrains.jet.lang;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
-import org.jetbrains.jet.lang.psi.JetImportDirective;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
+import org.jetbrains.jet.lang.resolve.ImportPath;
 import org.jetbrains.jet.lang.resolve.scopes.WritableScope;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author abreslav
@@ -30,7 +31,8 @@ import java.util.Collection;
 public interface ModuleConfiguration {
     ModuleConfiguration EMPTY = new ModuleConfiguration() {
         @Override
-        public void addDefaultImports(@NotNull Collection<JetImportDirective> directives) {
+        public List<ImportPath> getDefaultImports() {
+            return Collections.emptyList();
         }
 
         @Override
@@ -49,7 +51,7 @@ public interface ModuleConfiguration {
         }
     };
 
-    void addDefaultImports(@NotNull Collection<JetImportDirective> directives);
+    List<ImportPath> getDefaultImports();
 
     /**
      * This method is called every time a namespace descriptor is created. Use it to add extra descriptors to the namespace, e.g. merge a

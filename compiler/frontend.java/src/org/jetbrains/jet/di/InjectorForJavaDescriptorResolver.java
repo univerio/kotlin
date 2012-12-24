@@ -91,7 +91,6 @@ public class InjectorForJavaDescriptorResolver {
         this.javaPropertyResolver = new JavaPropertyResolver();
 
         javaBridgeConfiguration.setJavaSemanticServices(javaSemanticServices);
-        javaBridgeConfiguration.setProject(project);
 
         this.javaSemanticServices.setDescriptorResolver(javaDescriptorResolver);
         this.javaSemanticServices.setPsiClassFinder(psiClassFinder);

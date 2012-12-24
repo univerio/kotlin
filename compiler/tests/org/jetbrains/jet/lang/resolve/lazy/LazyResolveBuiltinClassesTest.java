@@ -31,7 +31,6 @@ import org.jetbrains.jet.lang.PlatformToKotlinClassMap;
 import org.jetbrains.jet.lang.descriptors.ModuleDescriptor;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
 import org.jetbrains.jet.lang.psi.JetFile;
-import org.jetbrains.jet.lang.psi.JetImportDirective;
 import org.jetbrains.jet.lang.psi.JetPsiFactory;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.BindingTraceContext;
@@ -47,7 +46,6 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -105,10 +103,8 @@ public class LazyResolveBuiltinClassesTest extends KotlinTestWithEnvironment {
 
     private class SpecialModuleConfiguration implements ModuleConfiguration {
         @Override
-        public void addDefaultImports(@NotNull Collection<JetImportDirective> directives) {
-            for (ImportPath defaultJetImport : DefaultModuleConfiguration.DEFAULT_JET_IMPORTS) {
-                directives.add(JetPsiFactory.createImportDirective(getProject(), defaultJetImport));
-            }
+        public List<ImportPath> getDefaultImports() {
+            return DefaultModuleConfiguration.DEFAULT_JET_IMPORTS;
         }
 
         @Override

@@ -18,16 +18,17 @@ package org.jetbrains.jet.analyzer;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.lang.PlatformToKotlinClassMap;
 import org.jetbrains.jet.lang.ModuleConfiguration;
+import org.jetbrains.jet.lang.PlatformToKotlinClassMap;
 import org.jetbrains.jet.lang.descriptors.NamespaceDescriptor;
-import org.jetbrains.jet.lang.psi.JetImportDirective;
 import org.jetbrains.jet.lang.resolve.BindingContext;
 import org.jetbrains.jet.lang.resolve.BindingTrace;
 import org.jetbrains.jet.lang.resolve.BodiesResolveContext;
+import org.jetbrains.jet.lang.resolve.ImportPath;
 import org.jetbrains.jet.lang.resolve.scopes.WritableScope;
 
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Stepan Koltsov
@@ -35,7 +36,8 @@ import java.util.Collection;
 public class AnalyzeExhaust {
     private static final ModuleConfiguration ERROR_CONFIGURATION = new ModuleConfiguration() {
         @Override
-        public void addDefaultImports(@NotNull Collection<JetImportDirective> directives) {
+        public List<ImportPath> getDefaultImports() {
+            return Collections.emptyList();
         }
 
         @Override
