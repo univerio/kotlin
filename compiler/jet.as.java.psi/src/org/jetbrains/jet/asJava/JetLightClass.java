@@ -27,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.impl.PsiClassImplUtil;
 import com.intellij.psi.impl.java.stubs.PsiClassStub;
@@ -40,10 +41,7 @@ import com.intellij.util.containers.Stack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
-import org.jetbrains.jet.codegen.ClassBuilder;
-import org.jetbrains.jet.codegen.ClassBuilderFactory;
-import org.jetbrains.jet.codegen.ClassBuilderMode;
-import org.jetbrains.jet.codegen.CompilationErrorHandler;
+import org.jetbrains.jet.codegen.*;
 import org.jetbrains.jet.codegen.binding.PsiCodegenPredictor;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.GenerationStrategy;
@@ -221,8 +219,8 @@ public class JetLightClass extends AbstractLightClass implements JetJavaMirrorMa
         try {
             GenerationState state = new GenerationState(project, builderFactory, context, Collections.singletonList(file));
             GenerationStrategy strategy = new LightClassGenerationStrategy(this, stubStack, answer);
+            KotlinCodegenFacade.compileCorrectFiles(state, strategy, CompilationErrorHandler.THROW_EXCEPTION);
 
-            strategy.compileCorrectFiles(state, CompilationErrorHandler.THROW_EXCEPTION);
             state.getFactory().files();
         }
         catch (ProcessCanceledException e) {

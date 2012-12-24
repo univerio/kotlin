@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jet.codegen.CompilationErrorHandler;
 import org.jetbrains.jet.codegen.state.GenerationState;
 import org.jetbrains.jet.codegen.state.GenerationStrategy;
+import org.jetbrains.jet.codegen.state.StandardGenerationStrategy;
 import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 
@@ -37,7 +38,7 @@ import java.util.Collection;
 /**
  * @author alex.tkachman
 */
-class LightClassGenerationStrategy extends GenerationStrategy {
+class LightClassGenerationStrategy implements GenerationStrategy {
     private static final Logger LOG = Logger.getInstance("#org.jetbrains.jet.asJava.LightClassGenerationStrategy");
 
     private final Stack<StubElement> stubStack;
@@ -52,10 +53,10 @@ class LightClassGenerationStrategy extends GenerationStrategy {
 
     @Override
     public void generateNamespace(
-            GenerationState state,
-            FqName fqName,
-            Collection<JetFile> namespaceFiles,
-            CompilationErrorHandler errorHandler
+            @NotNull GenerationState state,
+            @NotNull FqName fqName,
+            @NotNull Collection<JetFile> namespaceFiles,
+            @NotNull CompilationErrorHandler errorHandler
     ) {
         PsiManager manager = PsiManager.getInstance(state.getProject());
         stubStack.push(answer);
@@ -73,7 +74,7 @@ class LightClassGenerationStrategy extends GenerationStrategy {
         fakeFile.setPhysical(false);
         answer.setPsi(fakeFile);
 
-        super.generateNamespace(state, fqName, namespaceFiles, errorHandler);
+        StandardGenerationStrategy.INSTANCE.generateNamespace(state, fqName, namespaceFiles, errorHandler);
         final StubElement pop = stubStack.pop();
         if (pop != answer) {
             LOG.error("Unbalanced stack operations: " + pop);
