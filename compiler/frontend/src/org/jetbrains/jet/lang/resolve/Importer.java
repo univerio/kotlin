@@ -34,8 +34,7 @@ import java.util.List;
 /**
  * @author svtk
  */
-/*package*/ interface Importer {
-
+public interface Importer {
     void addAllUnderImport(@NotNull DeclarationDescriptor descriptor, @NotNull PlatformToKotlinClassMap platformToKotlinClassMap);
 
     void addAliasImport(@NotNull DeclarationDescriptor descriptor, @NotNull Name aliasName);
