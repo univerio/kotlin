@@ -127,6 +127,10 @@ public final class QualifiedNamesUtil {
     }
 
     public static boolean isImported(@NotNull ImportPath alreadyImported, @NotNull FqName fqName) {
+        if (alreadyImported.hasAlias()) {
+            return false;
+        }
+
         if (alreadyImported.isAllUnder() && !fqName.isRoot()) {
             return alreadyImported.fqnPart().equals(fqName.parent());
         }
@@ -135,7 +139,7 @@ public final class QualifiedNamesUtil {
     }
 
     public static boolean isImported(@NotNull ImportPath alreadyImported, @NotNull ImportPath newImport) {
-        if (newImport.isAllUnder()) {
+        if (newImport.isAllUnder() || newImport.hasAlias()) {
             return alreadyImported.equals(newImport);
         }
 

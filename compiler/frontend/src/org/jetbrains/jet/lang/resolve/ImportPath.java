@@ -17,18 +17,26 @@
 package org.jetbrains.jet.lang.resolve;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jet.lang.resolve.name.FqName;
+import org.jetbrains.jet.lang.resolve.name.Name;
 
 /**
  * @author Nikolay Krasko
  */
 public final class ImportPath {
     private final @NotNull FqName fqName;
+    private final @Nullable Name alias;
     private final boolean isAllUnder;
 
     public ImportPath(@NotNull FqName fqName, boolean isAllUnder) {
+        this(fqName, isAllUnder, null);
+    }
+
+    public ImportPath(@NotNull FqName fqName, boolean isAllUnder, @Nullable Name alias) {
         this.fqName = fqName;
         this.isAllUnder = isAllUnder;
+        this.alias = alias;
     }
 
     public ImportPath(@NotNull String pathStr) {
@@ -40,6 +48,8 @@ public final class ImportPath {
             this.isAllUnder = false;
             this.fqName = new FqName(pathStr);
         }
+
+        alias = null;
     }
 
     public String getPathStr() {
@@ -56,13 +66,24 @@ public final class ImportPath {
         return fqName;
     }
 
+    @Nullable
+    public Name getAlias() {
+        return alias;
+    }
+
+    public boolean hasAlias() {
+        return alias != null;
+    }
+
     public boolean isAllUnder() {
         return isAllUnder;
     }
 
     @Override
     public int hashCode() {
-        return 31 * fqName.hashCode() + (isAllUnder ? 1 : 0);
+        int result = 31 * fqName.hashCode() + (isAllUnder ? 1 : 0);
+        result = 31 * result + (alias != null ? alias.hashCode() : 0);
+        return result;
     }
 
     @Override
@@ -71,6 +92,8 @@ public final class ImportPath {
         if (!(obj instanceof ImportPath)) return false;
 
         ImportPath other = (ImportPath) obj;
-        return fqName.equals(other.fqName) && (isAllUnder == other.isAllUnder);
+
+        return fqName.equals(other.fqName) && (isAllUnder == other.isAllUnder) &&
+               ((alias == null && other.alias == null) || (alias != null && alias.equals(other.alias)));
     }
 }

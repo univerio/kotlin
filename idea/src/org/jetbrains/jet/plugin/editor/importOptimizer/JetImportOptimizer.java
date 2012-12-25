@@ -104,8 +104,8 @@ public class JetImportOptimizer implements ImportOptimizer {
                                 continue;
                             }
 
-                            if (isUseful(importPath, anImport.getAliasName(), usedQualifiedNames)) {
-                                ImportInsertHelper.addImportDirective(importPath, anImport.getAliasName(), jetFile);
+                            if (isUseful(importPath, usedQualifiedNames)) {
+                                ImportInsertHelper.addImportDirective(importPath, jetFile);
                             }
                         }
                     }
@@ -114,8 +114,8 @@ public class JetImportOptimizer implements ImportOptimizer {
         };
     }
 
-    public static boolean isUseful(ImportPath importPath, @Nullable String aliasName, Collection<FqName> usedNames) {
-        if (aliasName != null) {
+    public static boolean isUseful(ImportPath importPath, Collection<FqName> usedNames) {
+        if (importPath.hasAlias()) {
             // TODO: Add better analysis for aliases
             return true;
         }
