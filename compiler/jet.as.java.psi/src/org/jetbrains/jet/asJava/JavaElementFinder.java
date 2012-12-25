@@ -38,7 +38,6 @@ import org.jetbrains.jet.lang.resolve.java.JavaPsiFacadeKotlinHacks;
 import org.jetbrains.jet.lang.resolve.java.JvmAbi;
 import org.jetbrains.jet.lang.resolve.name.FqName;
 import org.jetbrains.jet.lang.resolve.name.Name;
-import org.jetbrains.jet.util.QualifiedNamesUtil;
 
 import java.util.Collection;
 import java.util.List;
@@ -105,7 +104,7 @@ public class JavaElementFinder extends PsiElementFinder implements JavaPsiFacade
 
         for (JetClassOrObject declaration : classOrObjectDeclarations) {
             if (!(declaration instanceof JetEnumEntry)) {
-                JetLightClass lightClass = JetLightClass.create(psiManager, (JetFile) declaration.getContainingFile(), qualifiedName);
+                KotlinLightClass lightClass = KotlinLightClass.create(psiManager, qualifiedName, declaration);
                 if (lightClass != null) {
                     answer.add(lightClass);
                 }
@@ -114,13 +113,10 @@ public class JavaElementFinder extends PsiElementFinder implements JavaPsiFacade
     }
 
     private void findPackageClass(FqName qualifiedName, GlobalSearchScope scope, List<PsiClass> answer) {
-        FqName packageClassName = QualifiedNamesUtil.combine(qualifiedName, Name.identifier(JvmAbi.PACKAGE_CLASS));
         Collection<JetFile> filesForPackage = lightClassGenerationSupport.findFilesForPackage(qualifiedName, scope);
 
         if (!filesForPackage.isEmpty() && NamespaceCodegen.shouldGenerateNSClass(filesForPackage)) {
-            // TODO This is wrong, but mimics the previous behavior. Will fix
-            JetFile someFile = filesForPackage.iterator().next();
-            JetLightClass lightClass = JetLightClass.create(psiManager, someFile, packageClassName);
+            KotlinLightClassForPackage lightClass = KotlinLightClassForPackage.create(psiManager, qualifiedName, filesForPackage);
             if (lightClass != null) {
                 answer.add(lightClass);
             }
@@ -205,8 +201,7 @@ public class JavaElementFinder extends PsiElementFinder implements JavaPsiFacade
         for (JetClassOrObject declaration : declarations) {
             String localName = getLocalName(declaration);
             if (localName != null) {
-                JetLightClass aClass = JetLightClass.create(psiManager, (JetFile) declaration.getContainingFile(),
-                                                            QualifiedNamesUtil.combine(packageFQN, Name.identifier(localName)));
+                KotlinLightClass aClass = KotlinLightClass.create(psiManager, packageFQN.child(Name.identifier(localName)), declaration);
                 if (aClass != null) {
                     answer.add(aClass);
                 }
