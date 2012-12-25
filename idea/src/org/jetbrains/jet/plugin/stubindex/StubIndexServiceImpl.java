@@ -35,11 +35,13 @@ public class StubIndexServiceImpl implements StubIndexService {
 
         sink.occurrence(JetPackageDeclarationIndex.getInstance().getKey(), fqName.getFqName());
 
-        do {
+        while (true) {
             sink.occurrence(JetAllPackagesIndex.getInstance().getKey(), fqName.getFqName());
+            if (fqName.isRoot()) {
+                return;
+            }
             fqName = fqName.parent();
         }
-        while (!fqName.isRoot());
     }
 
     @Override
