@@ -38,7 +38,7 @@ import java.io.IOException;
  * @author Nikolay Krasko
  */
 public class JetFileElementType extends IStubFileElementType<PsiJetFileStub> {
-    public static final int STUB_VERSION = 19;
+    public static final int STUB_VERSION = 20;
 
     public JetFileElementType() {
         super("jet.FILE", JetLanguage.INSTANCE);

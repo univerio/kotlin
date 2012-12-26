@@ -38,6 +38,7 @@ public class PsiJetClassStubImpl extends StubBase<JetClass> implements PsiJetCla
     private final StringRef name;
     private final StringRef[] superNames;
     private final boolean isTrait;
+    private final boolean isEnumClass;
     private final boolean isEnumEntry;
     private final boolean isAnnotation;
 
@@ -47,9 +48,9 @@ public class PsiJetClassStubImpl extends StubBase<JetClass> implements PsiJetCla
             @Nullable final String qualifiedName,
             String name,
             List<String> superNames,
-            boolean isTrait, boolean isEnumEntry, boolean isAnnotation) {
+            boolean isTrait, boolean isEnumClass, boolean isEnumEntry, boolean isAnnotation) {
         this(type, parent, StringRef.fromString(qualifiedName), StringRef.fromString(name), wrapStrings(superNames),
-             isTrait, isEnumEntry, isAnnotation);
+             isTrait, isEnumClass, isEnumEntry, isAnnotation);
     }
 
     public PsiJetClassStubImpl(
@@ -58,13 +59,16 @@ public class PsiJetClassStubImpl extends StubBase<JetClass> implements PsiJetCla
             StringRef qualifiedName,
             StringRef name,
             StringRef[] superNames,
-            boolean isTrait, boolean isEnumEntry,
+            boolean isTrait,
+            boolean isEnumClass,
+            boolean isEnumEntry,
             boolean isAnnotation) {
         super(parent, type);
         this.qualifiedName = qualifiedName;
         this.name = name;
         this.superNames = superNames;
         this.isTrait = isTrait;
+        this.isEnumClass = isEnumClass;
         this.isEnumEntry = isEnumEntry;
         this.isAnnotation = isAnnotation;
     }
@@ -93,6 +97,11 @@ public class PsiJetClassStubImpl extends StubBase<JetClass> implements PsiJetCla
     }
 
     @Override
+    public boolean isEnumClass() {
+        return isEnumClass;
+    }
+
+    @Override
     public boolean isEnumEntry() {
         return isEnumEntry;
     }
@@ -116,6 +125,10 @@ public class PsiJetClassStubImpl extends StubBase<JetClass> implements PsiJetCla
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("PsiJetClassStubImpl[");
+
+        if (isEnumClass()) {
+            builder.append("enumClass ");
+        }
 
         if (isEnumEntry()) {
             builder.append("enumEntry ");
