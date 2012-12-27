@@ -191,9 +191,4 @@ public class JetPsiFactory {
         JetFile namespace = createFile(project, importDirectiveBuilder.toString());
         return namespace.getImportDirectives().iterator().next();
     }
-
-    public static PsiElement createPrimaryConstructor(Project project) {
-        JetClass aClass = createClass(project, "class A()");
-        return aClass.findElementAt(7).getParent();
-    }
 }
