@@ -49,7 +49,7 @@ public class LazyPackageDescriptor extends AbstractNamespaceDescriptorImpl imple
 
         this.lazyScope = new LazyPackageMemberScope(resolveSession, declarationProvider, this);
 
-        this.memberScope = new ChainedScope(this, lazyScope, scope);
+        this.memberScope = new ChainedScope(this, "Lazy package members scope: " + name, lazyScope, scope);
     }
 
     @NotNull
