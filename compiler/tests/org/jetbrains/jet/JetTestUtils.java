@@ -33,6 +33,8 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.TestOnly;
 import org.jetbrains.jet.analyzer.AnalyzeExhaust;
+import org.jetbrains.jet.asJava.LightClassGenerationSupport;
+import org.jetbrains.jet.cli.jvm.compiler.CliLightClassGenerationSupport;
 import org.jetbrains.jet.cli.jvm.compiler.JetCoreEnvironment;
 import org.jetbrains.jet.lang.diagnostics.Diagnostic;
 import org.jetbrains.jet.lang.diagnostics.Severity;
@@ -301,6 +303,11 @@ public class JetTestUtils {
 
     public static String getFilePath(File file) {
         return FileUtil.toSystemIndependentName(file.getPath());
+    }
+
+    public static void newTrace(@NotNull JetCoreEnvironment environment) {
+        // let the next analysis use another trace
+        ((CliLightClassGenerationSupport) LightClassGenerationSupport.getInstance(environment.getProject())).newBindingTrace();
     }
 
     public interface TestFileFactory<F> {
