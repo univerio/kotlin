@@ -21,7 +21,7 @@ import com.intellij.codeInsight.navigation.GotoTargetRendererProvider;
 import com.intellij.ide.util.PsiElementListCellRenderer;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.jet.asJava.JetLightClass;
+import org.jetbrains.jet.asJava.KotlinLightClass;
 import org.jetbrains.jet.plugin.presentation.JetLightClassListCellRenderer;
 
 /**
@@ -31,7 +31,7 @@ public class JetGotoTargetRenderProvider implements GotoTargetRendererProvider {
     @Nullable
     @Override
     public PsiElementListCellRenderer getRenderer(PsiElement element, GotoTargetHandler.GotoData gotoData) {
-        if (element instanceof JetLightClass) {
+        if (element instanceof KotlinLightClass) {
             // Need to override default Java render
             return new JetLightClassListCellRenderer();
         }

@@ -22,11 +22,10 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.LightProjectDescriptor;
 import com.intellij.testFramework.fixtures.LightCodeInsightFixtureTestCase;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.jet.asJava.JetLightClass;
+import org.jetbrains.jet.asJava.KotlinLightClass;
+import org.jetbrains.jet.asJava.LightClassUtil;
 import org.jetbrains.jet.lang.psi.JetClass;
-import org.jetbrains.jet.lang.psi.JetFile;
 import org.jetbrains.jet.lang.psi.JetNamedFunction;
-import org.jetbrains.jet.lang.psi.JetPsiUtil;
 import org.jetbrains.jet.lang.resolve.java.JvmAbi;
 import org.jetbrains.jet.plugin.JetLightProjectDescriptor;
 import org.jetbrains.jet.plugin.PluginTestCaseBase;
@@ -101,7 +100,7 @@ public class JetJavaFacadeTest extends LightCodeInsightFixtureTestCase {
         assertInstanceOf(element, JetNamedFunction.class);
         JetNamedFunction toString = (JetNamedFunction) element;
 
-        assertNull("There should be no wrapper for built-in function", JetLightClass.wrapMethod(toString));
+        assertNull("There should be no wrapper for built-in function", LightClassUtil.getLightClassMethod(toString));
     }
 
     public void testInnerClass() throws Exception {
@@ -153,13 +152,8 @@ public class JetJavaFacadeTest extends LightCodeInsightFixtureTestCase {
         assertInstanceOf(element, JetClass.class);
         JetClass aClass = (JetClass) element;
 
-        JetLightClass createdByWrapDelegate = JetLightClass.wrapDelegate(aClass);
+        KotlinLightClass createdByWrapDelegate = LightClassUtil.createLightClass(aClass);
         assertNull(createdByWrapDelegate);
-
-        JetLightClass createdByFactory = JetLightClass.create(element.getManager(),
-                                                   (JetFile) element.getContainingFile(),
-                                                   JetPsiUtil.getFQName(aClass));
-        assertNull(createdByFactory);
     }
 
     private void doTestWrapMethod(boolean shouldBeWrapped) {
@@ -174,7 +168,7 @@ public class JetJavaFacadeTest extends LightCodeInsightFixtureTestCase {
         assertNotNull("Caret should be placed to function definition", jetFunction);
 
         // Should not fail!
-        PsiMethod psiMethod = JetLightClass.wrapMethod(jetFunction);
+        PsiMethod psiMethod = LightClassUtil.getLightClassMethod(jetFunction);
 
         if (shouldBeWrapped) {
             assertNotNull(String.format("Failed to wrap jetFunction '%s' to method", jetFunction.getText()), psiMethod);
@@ -198,7 +192,7 @@ public class JetJavaFacadeTest extends LightCodeInsightFixtureTestCase {
         assertNotNull("Caret should be placed to class definition", jetClass);
 
         // Should not fail!
-        JetLightClass lightClass = JetLightClass.wrapDelegate(jetClass);
+        KotlinLightClass lightClass = LightClassUtil.createLightClass(jetClass);
 
         assertNotNull(String.format("Failed to wrap jetClass '%s' to class", jetClass.getText()), lightClass);
 
