@@ -27,7 +27,8 @@ import org.jetbrains.jet.lang.resolve.name.LabelName;
 
 import java.util.*;
 
-import static org.jetbrains.jet.lang.diagnostics.Errors.*;
+import static org.jetbrains.jet.lang.diagnostics.Errors.LABEL_NAME_CLASH;
+import static org.jetbrains.jet.lang.diagnostics.Errors.UNRESOLVED_REFERENCE;
 import static org.jetbrains.jet.lang.resolve.BindingContext.LABEL_TARGET;
 import static org.jetbrains.jet.lang.resolve.BindingContext.REFERENCE_TARGET;
 
@@ -82,7 +83,7 @@ public class LabelResolver {
                 element = (JetElement) BindingContextUtils.descriptorToDeclaration(context.trace.getBindingContext(), declarationDescriptor);
             }
             else {
-                throw new UnsupportedOperationException(); // TODO
+                throw new UnsupportedOperationException(declarationDescriptor.getClass().toString()); // TODO
             }
             context.trace.record(LABEL_TARGET, labelExpression, element);
             return element;
