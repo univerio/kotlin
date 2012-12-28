@@ -104,7 +104,8 @@ public class JavaElementFinder extends PsiElementFinder implements JavaPsiFacade
 
         for (JetClassOrObject declaration : classOrObjectDeclarations) {
             if (!(declaration instanceof JetEnumEntry)) {
-                KotlinLightClass lightClass = KotlinLightClass.create(psiManager, qualifiedName, declaration);
+                KotlinLightClassForExplicitDeclaration
+                        lightClass = KotlinLightClassForExplicitDeclaration.create(psiManager, qualifiedName, declaration);
                 if (lightClass != null) {
                     answer.add(lightClass);
                 }
@@ -201,7 +202,8 @@ public class JavaElementFinder extends PsiElementFinder implements JavaPsiFacade
         for (JetClassOrObject declaration : declarations) {
             String localName = getLocalName(declaration);
             if (localName != null) {
-                KotlinLightClass aClass = KotlinLightClass.create(psiManager, packageFQN.child(Name.identifier(localName)), declaration);
+                KotlinLightClassForExplicitDeclaration aClass = KotlinLightClassForExplicitDeclaration
+                        .create(psiManager, packageFQN.child(Name.identifier(localName)), declaration);
                 if (aClass != null) {
                     answer.add(aClass);
                 }
