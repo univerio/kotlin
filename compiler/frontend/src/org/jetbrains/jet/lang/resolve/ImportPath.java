@@ -79,6 +79,15 @@ public final class ImportPath {
         return isAllUnder;
     }
 
+    @Nullable
+    public Name getImportedName() {
+        if (!isAllUnder()) {
+            return alias != null ? alias : fqName.shortName();
+        }
+
+        return null;
+    }
+
     @Override
     public int hashCode() {
         int result = 31 * fqName.hashCode() + (isAllUnder ? 1 : 0);
