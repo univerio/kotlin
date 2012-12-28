@@ -1,0 +1,81 @@
+* Failing tests
+
+* Run configurations can't find classes
+
+* Find Class for 'namespace' causes getContainingFile() called on KotlinLightClassForPackage -> stubs built
+** create a file with lazily build stub
+
+
+*** Think more of invalidation on changes. Every completion calls incOutOfCodeBlockModificationCounter()
+
+* hasModifier(STATIC) slows completion down
+* completion on a class name requests getContainingFile() from a light class which causes generation
+** maybe create a file with lazily built psi?
+
+All this should speed things up in the IDE
+
+Next thing to do:
+* ! KotlinReferenceSearcher.processQuery() calls wrapMethod() :(
+it's all in one file, just analyze it and be happy
+
+Next:
+* Find Usages - we need an incremental cache for body resolution results
+* Find JUnit classes should use declarations cache
+
+* Filter libraries out in JetShortNamesCache
+
+
+* JetShortNamesCache can't search for methods/fields etc
+* JetCacheManager must be removed as useless (note the hack about JS at the bottom)
+
+* JetCodeBlockModificationListener.isInsideCodeBlock() is wrong both ways -- drop this class, it is duplicated
+
+* Completion causes out-of-code-block-modification
+** Try to check whether we are in a synthetic file
+
+
+- ? We codegen a more than needed: the whole file instead of one class
+-- but we don't throw away the extra classes, we use them (storing in JetFile's user data) if they are requested later
+-- No point, too little time spent in generation itself
+
+
+
+* ! getNavigationElement() on navigation (from Find Class)
+
+---- For all the above: try to base JetLightClass on JetClass, not JetFile
+Note: we'll need to support 'foo/namespace.class' somehow: it doesn't have a corresponding JetClass (nor has it a corresponding file, btw)
+
+
+* What's taking so long in TDA?
+
+KAnnotator
+Classes: 196
+Objects: 12
+Members: 1060
+Functions: 718
+Properties: 197
+
+THR: 0.5s
+DeclR: 1s
+OverrR: 0.5s
+
+
+
+* ! KotlinReferenceSearcher.processQuery() calls wrapMethod() :(
+
+
+* JetShortNamesCache.getClassesByName() is slow on Cmd+O, "kotlinlib.*"
+** Looks like we are not utilizing stubs properly
+
+
+* ImportInsertHelper.addImportDirectiveOrChangeToFqName() runs analysis (e.g. completion after the name of already imported class)
+
+
+Profiler:
+* Filter noise
+* Mute
+* Hierarchical
+* Non-local
+* Smart stack-traces
+* :) IDE view
+
