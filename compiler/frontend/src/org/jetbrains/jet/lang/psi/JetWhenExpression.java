@@ -36,6 +36,15 @@ public class JetWhenExpression extends JetExpressionImpl {
     }
 
     @Nullable
+    public JetWhenEntry getLastEntry() {
+        List<JetWhenEntry> entries = getEntries();
+        if (entries.isEmpty()) {
+            return null;
+        }
+        return entries.get(entries.size()-1);
+    }
+
+    @Nullable
     public JetExpression getSubjectExpression() {
         return findChildByClass(JetExpression.class);
     }
